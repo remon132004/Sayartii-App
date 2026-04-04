@@ -102,38 +102,56 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get obdLiveData => 'البيانات الحية OBD';
+
   @override
   String get predictedCodesTitle => 'الأعطال المتوقعة';
+
   @override
   String get noIssuesDetected => 'لا توجد أعطال مكتشفة';
+
   @override
   String get connectToDevice => 'قم بتوصيل الجهاز';
+
   @override
   String get currentSpeedLabel => 'السرعة الحالية';
+
   @override
   String get engineRpmLabel => 'دوران المحرك';
+
   @override
   String get engineCoolantLabel => 'حرارة المياه';
+
   @override
   String get fuelTrimLabel => 'نسبة الوقود القصيرة';
+
   @override
   String get engineLoadLabel => 'حمل المحرك';
+
   @override
   String get throttleLabel => 'موضع الخانق';
+
   @override
   String get airIntakeLabel => 'حرارة هواء المحرك';
+
   @override
   String get timingAdvanceLabel => 'تقدم التوقيت';
+
   @override
   String get inDepthCheckTitle => 'الفحص الشامل';
+
   @override
   String get inDepthCheckSoon => 'هذه الميزة قادمة قريباً!';
+
   @override
   String get aboutUsTitle => 'عن سيارتي';
+
   @override
-  String get aboutUsDesc => 'سيارتي هو تطبيق تشخيص سيارات مدعوم بالذكاء الاصطناعي، يتصل بسيارتك عبر OBD-II ويساعدك على اكتشاف الأعطال والتنبؤ بها قبل أن تتفاقم.';
+  String get aboutUsDesc =>
+      'سيارتي هو تطبيق تشخيص سيارات مدعوم بالذكاء الاصطناعي، يتصل بسيارتك عبر OBD-II ويساعدك على اكتشاف الأعطال والتنبؤ بها قبل أن تتفاقم.';
+
   @override
   String get vehicleLabel => 'المركبة';
+
   @override
   String get userName => 'المستخدم';
 }

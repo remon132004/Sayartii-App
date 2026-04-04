@@ -278,23 +278,112 @@ abstract class AppLocalizations {
   /// **'Change Language'**
   String get changeLanguage;
 
+  /// No description provided for @obdLiveData.
+  ///
+  /// In en, this message translates to:
+  /// **'OBD Live Data'**
   String get obdLiveData;
+
+  /// No description provided for @predictedCodesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Predicted Codes'**
   String get predictedCodesTitle;
+
+  /// No description provided for @noIssuesDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'No issues detected'**
   String get noIssuesDetected;
+
+  /// No description provided for @connectToDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to device'**
   String get connectToDevice;
+
+  /// No description provided for @currentSpeedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current speed'**
   String get currentSpeedLabel;
+
+  /// No description provided for @engineRpmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine RPM'**
   String get engineRpmLabel;
+
+  /// No description provided for @engineCoolantLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine coolant temp'**
   String get engineCoolantLabel;
+
+  /// No description provided for @fuelTrimLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Short term fuel bank1'**
   String get fuelTrimLabel;
+
+  /// No description provided for @engineLoadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Engine load'**
   String get engineLoadLabel;
+
+  /// No description provided for @throttleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Throttle position'**
   String get throttleLabel;
+
+  /// No description provided for @airIntakeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Air intake temp'**
   String get airIntakeLabel;
+
+  /// No description provided for @timingAdvanceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Timing advance'**
   String get timingAdvanceLabel;
+
+  /// No description provided for @inDepthCheckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In-Depth Check'**
   String get inDepthCheckTitle;
+
+  /// No description provided for @inDepthCheckSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is coming soon!'**
   String get inDepthCheckSoon;
+
+  /// No description provided for @aboutUsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About Sayartii'**
   String get aboutUsTitle;
+
+  /// No description provided for @aboutUsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sayartii is an AI-powered car diagnostic app that connects to your vehicle via OBD-II and helps you detect and predict issues before they become serious problems.'**
   String get aboutUsDesc;
+
+  /// No description provided for @vehicleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle'**
   String get vehicleLabel;
+
+  /// No description provided for @userName.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
   String get userName;
 }
 

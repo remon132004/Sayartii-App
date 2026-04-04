@@ -102,38 +102,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get obdLiveData => 'OBD Live Data';
+
   @override
   String get predictedCodesTitle => 'Predicted Codes';
+
   @override
   String get noIssuesDetected => 'No issues detected';
+
   @override
   String get connectToDevice => 'Connect to device';
+
   @override
   String get currentSpeedLabel => 'Current speed';
+
   @override
   String get engineRpmLabel => 'Engine RPM';
+
   @override
   String get engineCoolantLabel => 'Engine coolant temp';
+
   @override
   String get fuelTrimLabel => 'Short term fuel bank1';
+
   @override
   String get engineLoadLabel => 'Engine load';
+
   @override
   String get throttleLabel => 'Throttle position';
+
   @override
   String get airIntakeLabel => 'Air intake temp';
+
   @override
   String get timingAdvanceLabel => 'Timing advance';
+
   @override
   String get inDepthCheckTitle => 'In-Depth Check';
+
   @override
   String get inDepthCheckSoon => 'This feature is coming soon!';
+
   @override
   String get aboutUsTitle => 'About Sayartii';
+
   @override
-  String get aboutUsDesc => 'Sayartii is an AI-powered car diagnostic app that connects to your vehicle via OBD-II and helps you detect and predict issues before they become serious problems.';
+  String get aboutUsDesc =>
+      'Sayartii is an AI-powered car diagnostic app that connects to your vehicle via OBD-II and helps you detect and predict issues before they become serious problems.';
+
   @override
   String get vehicleLabel => 'Vehicle';
+
   @override
   String get userName => 'User';
 }
