@@ -28,7 +28,7 @@ class InDepthCheckView extends StatelessWidget {
                 'assets/icons/in_depth.svg',
                 height: 18.h,
                 colorFilter: ColorFilter.mode(
-                  kPrimaryBlueColor.withOpacity(0.5),
+                  kPrimaryBlueColor.withValues(alpha: 0.5),
                   BlendMode.srcIn,
                 ),
               ),

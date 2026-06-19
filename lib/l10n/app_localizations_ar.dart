@@ -154,4 +154,113 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get userName => 'المستخدم';
+
+  @override
+  String get premiumMembership => 'عضوية مميزة';
+
+  @override
+  String get connected => 'متصل';
+
+  @override
+  String get disconnected => 'غير متصل';
+
+  @override
+  String get liveDataStream => 'بث البيانات المباشر';
+
+  @override
+  String get aboutSayartii => 'عن سيارتي';
+
+  @override
+  String get connectivity => 'الاتصال';
+
+  @override
+  String get bluetoothOffPrompt =>
+      'البلوتوث مغلق. هل تريد تشغيله للاتصال بسيارتك؟';
+
+  @override
+  String get yes => 'نعم';
+
+  @override
+  String get disconnect => 'قطع الاتصال';
+
+  @override
+  String get searchBluetooth => 'البحث عن الأجهزة';
+
+  @override
+  String get connecting => 'جارٍ الاتصال...';
+
+  @override
+  String get notConnected => 'غير متصل';
+
+  @override
+  String get mileage => 'المسافة';
+
+  @override
+  String get totalDistance => 'إجمالي المسافة';
+
+  @override
+  String get avgFuel => 'متوسط الوقود';
+
+  @override
+  String get estimatedConsumption => 'استهلاك تقديري';
+
+  @override
+  String get loginTab => 'تسجيل الدخول';
+
+  @override
+  String get signUpTab => 'إنشاء حساب';
+
+  @override
+  String get welcomeBack => 'مرحباً بعودتك! سجّل دخولك للمتابعة';
+
+  @override
+  String get createAccountSub => 'أنشئ حسابك للبدء';
+
+  @override
+  String get fullName => 'الاسم الكامل';
+
+  @override
+  String get vehicleModel => 'موديل السيارة';
+
+  @override
+  String get modelYear => 'سنة الصنع';
+
+  @override
+  String get emailAddress => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get forgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get loginBtn => 'دخول';
+
+  @override
+  String get createAccountBtn => 'إنشاء حساب';
+
+  @override
+  String get noAccount => 'ليس لديك حساب؟ ';
+
+  @override
+  String get alreadyAccount => 'لديك حساب بالفعل؟ ';
+
+  @override
+  String get nameRequired => 'الاسم مطلوب';
+
+  @override
+  String get enterValidEmail => 'أدخل بريد إلكتروني صحيح';
+
+  @override
+  String get minSixChars => '6 أحرف على الأقل';
+
+  @override
+  String get loginFailed => 'فشل تسجيل الدخول. تحقق من بيانات الحساب.';
+
+  @override
+  String get registrationFailed => 'فشل إنشاء الحساب. حاول مجدداً.';
+
+  @override
+  String get accountCreated => 'تم إنشاء الحساب! سجّل دخولك الآن.';
 }

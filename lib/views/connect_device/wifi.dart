@@ -19,7 +19,7 @@ class WiFi extends StatefulWidget {
 }
 
 class _WiFiState extends State<WiFi> {
- final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   String ipAddress = "";
   String port = "";
   final ipController = TextEditingController();
@@ -65,9 +65,7 @@ class _WiFiState extends State<WiFi> {
               port = value!;
             },
           ),
-          SizedBox(
-            height: 20.h,
-          ),
+          SizedBox(height: 20.h),
           CustomButton(
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
@@ -76,29 +74,36 @@ class _WiFiState extends State<WiFi> {
                   context: context,
                   builder: (BuildContext context) {
                     return FutureBuilder<Socket>(
-                      future:
-                          connectToServer(ip: ipController.text, port: int.parse(portController.text)),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<Socket> snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const AlertDialog(
-                            content: CircularProgressIndicator(),
-                          );
-                        } else if (snapshot.hasError) {
-                          return AlertDialog(
-                            content: Text('Error: ${snapshot.error}'),
-                          );
-                        } else {
-                          DataCubit dataCubit = BlocProvider.of<DataCubit>(context);
+                      future: connectToServer(
+                        ip: ipController.text,
+                        port: int.parse(portController.text),
+                      ),
+                      builder:
+                          (
+                            BuildContext context,
+                            AsyncSnapshot<Socket> snapshot,
+                          ) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const AlertDialog(
+                                content: CircularProgressIndicator(),
+                              );
+                            } else if (snapshot.hasError) {
+                              return AlertDialog(
+                                content: Text('Error: ${snapshot.error}'),
+                              );
+                            } else {
+                              DataCubit dataCubit = BlocProvider.of<DataCubit>(
+                                context,
+                              );
 
-                          reciveData(dataCubit);
-                          
-                          return const AlertDialog(
-                            content: Text('Connected to the server'),
-                          );
-                        }
-                      },
+                              reciveData(dataCubit);
+
+                              return const AlertDialog(
+                                content: Text('Connected to the server'),
+                              );
+                            }
+                          },
                     );
                   },
                 );
@@ -113,7 +118,7 @@ class _WiFiState extends State<WiFi> {
     );
   }
 
-   Widget text(String lable) {
+  Widget text(String lable) {
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Align(
@@ -126,10 +131,11 @@ class _WiFiState extends State<WiFi> {
     );
   }
 
-    Widget textField(
-      {required String? Function(String?)? validator,
-      required Function(String?)? onsaved,
-      required TextEditingController controller}) {
+  Widget textField({
+    required String? Function(String?)? validator,
+    required Function(String?)? onsaved,
+    required TextEditingController controller,
+  }) {
     return TextFormField(
       validator: validator,
       controller: controller,
@@ -137,10 +143,10 @@ class _WiFiState extends State<WiFi> {
       keyboardType: TextInputType.number,
       cursorColor: kPrimaryBlueColor,
       decoration: const InputDecoration(
-          focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-        color: kPrimaryBlueColor,
-      ))),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: kPrimaryBlueColor),
+        ),
+      ),
     );
   }
 }

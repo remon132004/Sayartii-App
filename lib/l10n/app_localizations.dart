@@ -385,6 +385,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User'**
   String get userName;
+
+  /// No description provided for @premiumMembership.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Membership'**
+  String get premiumMembership;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @disconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get disconnected;
+
+  /// No description provided for @liveDataStream.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Data Stream'**
+  String get liveDataStream;
+
+  /// No description provided for @aboutSayartii.
+  ///
+  /// In en, this message translates to:
+  /// **'About Sayartii'**
+  String get aboutSayartii;
+
+  /// No description provided for @connectivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Connectivity'**
+  String get connectivity;
+
+  /// No description provided for @bluetoothOffPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluetooth is off. Would you like to enable it to connect to your car?'**
+  String get bluetoothOffPrompt;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get disconnect;
+
+  /// No description provided for @searchBluetooth.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Bluetooth Devices'**
+  String get searchBluetooth;
+
+  /// No description provided for @connecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting...'**
+  String get connecting;
+
+  /// No description provided for @notConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Connected'**
+  String get notConnected;
+
+  /// No description provided for @mileage.
+  ///
+  /// In en, this message translates to:
+  /// **'MILEAGE'**
+  String get mileage;
+
+  /// No description provided for @totalDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Distance'**
+  String get totalDistance;
+
+  /// No description provided for @avgFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'AVG FUEL'**
+  String get avgFuel;
+
+  /// No description provided for @estimatedConsumption.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Consumption'**
+  String get estimatedConsumption;
+
+  /// No description provided for @loginTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginTab;
+
+  /// No description provided for @signUpTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get signUpTab;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back! Sign in to continue'**
+  String get welcomeBack;
+
+  /// No description provided for @createAccountSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account to get started'**
+  String get createAccountSub;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @vehicleModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle Model'**
+  String get vehicleModel;
+
+  /// No description provided for @modelYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Model Year'**
+  String get modelYear;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get emailAddress;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPassword;
+
+  /// No description provided for @loginBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginBtn;
+
+  /// No description provided for @createAccountBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccountBtn;
+
+  /// No description provided for @noAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? '**
+  String get noAccount;
+
+  /// No description provided for @alreadyAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? '**
+  String get alreadyAccount;
+
+  /// No description provided for @nameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get nameRequired;
+
+  /// No description provided for @enterValidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email'**
+  String get enterValidEmail;
+
+  /// No description provided for @minSixChars.
+  ///
+  /// In en, this message translates to:
+  /// **'Min 6 characters'**
+  String get minSixChars;
+
+  /// No description provided for @loginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed. Please check your credentials.'**
+  String get loginFailed;
+
+  /// No description provided for @registrationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed. Please try again.'**
+  String get registrationFailed;
+
+  /// No description provided for @accountCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created! Please log in.'**
+  String get accountCreated;
 }
 
 class _AppLocalizationsDelegate

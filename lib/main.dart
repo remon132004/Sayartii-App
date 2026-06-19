@@ -5,7 +5,6 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:sayartii/views/connect_device/cubit/bluetooth_cubit.dart';
 import 'package:sayartii/views/connect_device/cubit/connect_device_cubit.dart';
 import 'package:sayartii/views/notification/local_notification.dart';
-import 'package:sayartii/views/splash_screen.dart';
 import 'package:sayartii/views/trouble_scan/cubit/trouble_scan_cubit.dart';
 import 'package:sizer/sizer.dart';
 import 'constants.dart';
@@ -15,18 +14,26 @@ import 'package:sayartii/l10n/app_localizations.dart';
 import 'package:sayartii/cubit/language_cubit.dart';
 
 
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:sayartii/utils/login_helper.dart';
+import 'package:sayartii/views/intro_screen.dart';
+import 'package:sayartii/views/nav_container.dart';
+
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   await initializeNotifications();
 
-  //ByteData data = await PlatformAssetBundle().load('assets/ca/lets-encrypt-r3.pem');
-  //SecurityContext.defaultContext.setTrustedCertificatesBytes(data.buffer.asUint8List());
-  //HttpOverrides.global = MyHttpOverrides() as HttpOverrides? ;
+  // Initialize login status while splash is still showing natively
+  await Helper.getUserLoggedInSharedPreference();
 
-  // initializeNotifications();
   Bloc.observer = SimpleBlocObserver();
 
   runApp(Phoenix(child: MyApp(navigatorKey: navigatorKey)));
+  
+  // Remove native splash right before first frame
+  FlutterNativeSplash.remove();
 }
 
 class MyApp extends StatelessWidget {
@@ -93,7 +100,7 @@ class MyApp extends StatelessWidget {
                 labelSmall: TextStyle(fontFamily: 'NotoSans'),
               ),
             ),
-            home: const SplashScreen());
+            home: Helper.isLogged == true ? const NavContainer() : const OnBoarding());
           },
         ),
       );

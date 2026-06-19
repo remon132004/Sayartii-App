@@ -154,4 +154,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get userName => 'User';
+
+  @override
+  String get premiumMembership => 'Premium Membership';
+
+  @override
+  String get connected => 'Connected';
+
+  @override
+  String get disconnected => 'Disconnected';
+
+  @override
+  String get liveDataStream => 'Live Data Stream';
+
+  @override
+  String get aboutSayartii => 'About Sayartii';
+
+  @override
+  String get connectivity => 'Connectivity';
+
+  @override
+  String get bluetoothOffPrompt =>
+      'Bluetooth is off. Would you like to enable it to connect to your car?';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get disconnect => 'Disconnect';
+
+  @override
+  String get searchBluetooth => 'Search Bluetooth Devices';
+
+  @override
+  String get connecting => 'Connecting...';
+
+  @override
+  String get notConnected => 'Not Connected';
+
+  @override
+  String get mileage => 'MILEAGE';
+
+  @override
+  String get totalDistance => 'Total Distance';
+
+  @override
+  String get avgFuel => 'AVG FUEL';
+
+  @override
+  String get estimatedConsumption => 'Estimated Consumption';
+
+  @override
+  String get loginTab => 'Login';
+
+  @override
+  String get signUpTab => 'Sign Up';
+
+  @override
+  String get welcomeBack => 'Welcome back! Sign in to continue';
+
+  @override
+  String get createAccountSub => 'Create your account to get started';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get vehicleModel => 'Vehicle Model';
+
+  @override
+  String get modelYear => 'Model Year';
+
+  @override
+  String get emailAddress => 'Email Address';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get loginBtn => 'Login';
+
+  @override
+  String get createAccountBtn => 'Create Account';
+
+  @override
+  String get noAccount => 'Don\'t have an account? ';
+
+  @override
+  String get alreadyAccount => 'Already have an account? ';
+
+  @override
+  String get nameRequired => 'Name is required';
+
+  @override
+  String get enterValidEmail => 'Enter a valid email';
+
+  @override
+  String get minSixChars => 'Min 6 characters';
+
+  @override
+  String get loginFailed => 'Login failed. Please check your credentials.';
+
+  @override
+  String get registrationFailed => 'Registration failed. Please try again.';
+
+  @override
+  String get accountCreated => 'Account created! Please log in.';
 }

@@ -1,6 +1,6 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:sayartii/constants.dart';
 import 'package:sayartii/views/intro_screen.dart';
 import 'package:sayartii/views/nav_container.dart';
 
@@ -14,41 +14,43 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  double opacity = 0;
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginAndNavigate();
+  }
+
+  Future<void> _checkLoginAndNavigate() async {
+    // Artificial tiny delay just to ensure smooth rendering transition from native splash
+    await Future.delayed(const Duration(milliseconds: 300));
+    await Helper.getUserLoggedInSharedPreference();
+    
+    if (!mounted) return;
+    
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return Helper.isLogged == true ? const NavContainer() : const OnBoarding();
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return FlutterSplashScreen.fadeIn(
-      backgroundColor: Colors.white,
-      onInit: () {
-        debugPrint("On Init");
-      },
-      onEnd: () {
-        debugPrint("On End");
-      },
-      childWidget: Center(
-        child: SvgPicture.asset(
-          'assets/images/icon.svg',
+    // This perfectly matches the native Android splash screen to prevent any jumping/flickering.
+    return Scaffold(
+      backgroundColor: kPrimaryBackGroundColor,
+      body: Center(
+        child: Image.asset(
+          'assets/images/perfect_splash_icon_hq.png',
+          width: 130, // Adjusted to match the high-res native scaled down size
         ),
       ),
-      onAnimationEnd: () => debugPrint("On Fade In End"),
-      nextScreen: FutureBuilder(
-        future: Helper.getUserLoggedInSharedPreference(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(); // Show container while waiting for future to complete
-          } else {
-            return Helper.isLogged == true
-                ? const NavContainer()
-              //  : const NavContainer();
-            : const OnBoarding();
-          }
-        },
-      ),
-      //  Helper.isLogged == true
-      //               ? const NavContainer()
-      //               : const OnBoarding(),
-      duration: const Duration(milliseconds: 5000),
     );
   }
 }

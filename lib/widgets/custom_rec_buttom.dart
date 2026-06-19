@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 
 class CustomRecButton extends StatelessWidget {
   const CustomRecButton(

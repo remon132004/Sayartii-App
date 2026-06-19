@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:sayartii/constants.dart';
 import '../models/car_data.dart';
 import '../views/registertion/apiData.dart';
 
 class CarDataService {
-  static const String baseUrl = 'http://54.236.94.229:5000/api/CarData';
+  static const String baseUrl = '$kBackendUrl/api/CarData/CarData';
 
   Future<bool> postCarData(CarDataModel data) async {
     try {

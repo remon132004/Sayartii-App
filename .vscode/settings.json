@@ -1,0 +1,12 @@
+{
+  "java.import.exclusions": [
+    "**/android/**",
+    "**/build/**",
+    "**/.gradle/**"
+  ],
+  "java.autobuild.enabled": false,
+  "java.import.gradle.enabled": false,
+  "java.import.maven.enabled": false,
+  "editor.formatOnSave": false,
+  "dart.flutterSdkPath": "C:\\flutter"
+}

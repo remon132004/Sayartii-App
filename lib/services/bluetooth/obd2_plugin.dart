@@ -74,19 +74,8 @@ class Obd2Plugin {
   }
 
   Future<bool> get isBluetoothEnable async {
-    if (_bluetoothState == BluetoothState.STATE_OFF) {
-      return false;
-    } else if (_bluetoothState == BluetoothState.STATE_ON) {
-      return true;
-    } else {
-      try {
-        _bluetoothState = await initBluetooth;
-        bool newStatus = await isBluetoothEnable;
-        return newStatus;
-      } catch (e) {
-        throw Exception("obd2 plugin not initialed");
-      }
-    }
+    _bluetoothState = await FlutterBluetoothSerial.instance.state;
+    return _bluetoothState == BluetoothState.STATE_ON;
   }
 
   Future<List<BluetoothDevice>> get getPairedDevices async {
@@ -150,34 +139,66 @@ class Obd2Plugin {
       BluetoothDevice device,
       Function(BluetoothConnection? connection) onConnected,
       Function(String message) onError) async {
-    try {
-      if (connection != null) {
-        await onConnected(connection);
-        return;
+    int retries = 2;
+    for (int i = 0; i < retries; i++) {
+      try {
+        if (connection != null && connection!.isConnected) {
+          await onConnected(connection);
+          return;
+        }
+        if (connection != null && !connection!.isConnected) {
+          await disconnect();
+        }
+        
+        // CRITICAL FIX: Always cancel discovery before connecting.
+        // Android Bluetooth stack often throws "read failed" if discovery is active.
+        try {
+          await FlutterBluetoothSerial.instance.cancelDiscovery();
+        } catch (_) {}
+        
+        connection = await BluetoothConnection.toAddress(device.address).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => throw Exception("Connection timed out after 5 seconds"),
+        );
+        
+        if (connection != null) {
+          await onConnected(connection);
+          return;
+        } else {
+          throw Exception("Could not connect to the device.");
+        }
+      } catch (e) {
+        await disconnect();
+        debugPrint("connection problem attempt ${i + 1}: $e");
+        if (i == retries - 1) {
+          String err = e.toString();
+          if (err.contains("All connection methods failed")) {
+            onError("المحاكي يرفض الاتصال! يرجى إغلاق تطبيق المحاكي في (الهاتف الآخر) وفتحه من جديد.");
+          } else if (err.contains("read failed") || err.contains("connect_error")) {
+            onError("Connection failed. Please restart your Bluetooth and try again.");
+          } else if (err.contains("Connection timed out")) {
+            onError("Connection timeout. Make sure the OBD device is turned on and nearby.");
+          } else {
+            onError("Could not connect. Please check your Bluetooth pairing.");
+          }
+        } else {
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
       }
-      connection = await BluetoothConnection.toAddress(device.address);
-      if (connection != null) {
-        await onConnected(connection);
-      } else {
-        throw Exception(
-            "Sorry this happened. But I can not connect to the device. But I guess the device is not nearby or you have not disconnected before. Finally, if you wants to enter into a new relationship, you must end his previous relationship");
-      }
-    } catch (e) {
-      disconnect();
-      debugPrint("connection problem $e");
     }
   }
 
   Future<bool> disconnect() async {
-    if (connection?.isConnected == true) {
-      await connection?.close();
+    if (connection != null) {
+      if (connection!.isConnected) {
+        try { await connection!.finish(); } catch(_) {}
+      }
+      try { connection!.dispose(); } catch(_) {}
       connection = null;
       onResponse = null;
       return true;
-    } else {
-      connection = null;
-      return false;
     }
+    return false;
   }
 
   Future<int> getParamsFromJSON(String jsonString,
@@ -361,7 +382,7 @@ class Obd2Plugin {
       connection?.input?.listen((Uint8List data) {
         Uint8List bytes = Uint8List.fromList(data.toList());
         String string = String.fromCharCodes(bytes);
-        //debugPrint("***$string");
+        debugPrint("***$string");
         if (!string.contains('>')) {
           response += string;
         } else {
@@ -378,19 +399,26 @@ class Obd2Plugin {
                   .replaceAll("\n", "")
                   .replaceAll("\r", "")
                   .replaceAll(">", "")
-                  .replaceAll("SEARCHING...", "");
-              // if (validResponse.contains(
-              //         runningService["unit"].toString().toUpperCase()) ||
-              //     validResponse.contains(
-              //         runningService["unit"].toString().toLowerCase())) {
-              //   validResponse = validResponse.replaceAll(
-              //       runningService["unit"].toString().toUpperCase(), "");
-              //   validResponse = validResponse.replaceAll(
-              //       runningService["unit"].toString().toLowerCase(), "");
-              // }
+                  .replaceAll("SEARCHING...", "")
+                  .replaceAll("?", "")
+                  .replaceAll(" ", "");
+              
+              // Strip echoed command from beginning of response
+              String pidNoSpace = runningService["PID"].toString().replaceAll(" ", "").toUpperCase();
+              validResponse = validResponse.toUpperCase();
+              if (validResponse.startsWith(pidNoSpace)) {
+                validResponse = validResponse.substring(pidNoSpace.length);
+              }
+              
+              debugPrint("===RAW RESPONSE: $response");
+              debugPrint("===CLEAN RESPONSE: $validResponse");
+              debugPrint("===PID: ${runningService["PID"]} | TITLE: ${runningService["title"]}");
+              debugPrint("===DESCRIPTION: ${runningService["description"]}");
+
               if (runningService["description"].toString().contains(", ")) {
                 List<String> bytes = _calculateParameterFrames(
                     runningService["PID"], validResponse.toString());
+                debugPrint("===PARSED BYTES: $bytes");
                 String formula =
                     runningService["description"].toString().split(", ")[1];
                 type = type.split(", ")[0];
@@ -400,17 +428,20 @@ class Obd2Plugin {
                     formula = formula.replaceAll("[${i.toString()}]",
                         int.parse(bytes[i], radix: 16).toRadixString(10));
                   }
+                  debugPrint("===FORMULA AFTER SUB: $formula");
                   Parser p = Parser();
                   Expression exp = p.parse(formula);
                   dyResponse = exp
                       .evaluate(EvaluationType.REAL, ContextModel())
                       .toString();
                 } catch (e) {
-                  //
+                  debugPrint("===PARSE ERROR: $e");
+                  dyResponse = "Err";
                 }
               } else {
                 dyResponse = validResponse.toString();
               }
+              debugPrint("+++dyResponse: $dyResponse");
               runningService["response"] = dyResponse;
               parameterResponse.add(runningService);
               if (sendDTCToResponse) {
@@ -518,8 +549,8 @@ class Obd2Plugin {
   }
 
   List<String> _calculateParameterFrames(String command, String response) {
-    command = command.replaceAll(" ", "");
-    response = response.replaceAll(" ", "");
+    command = command.replaceAll(" ", "").toUpperCase();
+    response = response.replaceAll(" ", "").toUpperCase();
 
     if (response == "NODATA") {
       return [];
@@ -546,8 +577,8 @@ class Obd2Plugin {
   }
 
   List<String> _calculateDtcFrames(String command, String response) {
-    command = command.replaceAll(" ", "");
-    response = response.replaceAll(" ", "");
+    command = command.replaceAll(" ", "").toUpperCase();
+    response = response.replaceAll(" ", "").toUpperCase();
 
     if (response == "NODATA") {
       return [];

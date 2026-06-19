@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sayartii/constants.dart';
+import 'package:sayartii/l10n/app_localizations.dart';
 import 'package:sayartii/views/connect_device/bluetooth.dart';
 import 'package:sayartii/views/connect_device/cubit/connect_device_cubit.dart';
 import 'package:sayartii/views/connect_device/wifi.dart';
@@ -17,14 +19,17 @@ class _ConnectDeviceViewState extends State<ConnectDeviceView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kPrimaryBackGroundColor,
       appBar: AppBar(
-        surfaceTintColor: Colors.white,
-        backgroundColor: Colors.white,
+        backgroundColor: kPrimaryBackGroundColor,
+        foregroundColor: kPrimaryDarkColor,
+        elevation: 0,
         centerTitle: true,
         title: Text(
-          "Connectivity",
+          AppLocalizations.of(context)!.connectivity,
           style: TextStyle(
-            fontWeight: FontWeight.w500,
+            color: kPrimaryDarkColor,
+            fontWeight: FontWeight.w700,
             fontSize: 15.sp,
           ),
         ),

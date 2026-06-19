@@ -24,10 +24,25 @@ class _TroubleScanState extends State<TroubleScan> {
     var troubleBloc = BlocProvider.of<TroubleScanCubit>(context);
 
     return Scaffold(
+      backgroundColor: kPrimaryBackGroundColor,
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.troubleScanningTitle),
+        backgroundColor: kSurface,
+        elevation: 0,
         centerTitle: true,
+        title: Text(
+          AppLocalizations.of(context)!.troubleScanningTitle,
+          style: TextStyle(
+            color: kPrimaryDarkColor,
+            fontWeight: FontWeight.w700,
+            fontSize: 15.sp,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: kBorderColor),
+        ),
         leading: BackButton(
+          color: kPrimaryDarkColor,
           onPressed: () {
             BlocProvider.of<BluetoothCubit>(context).send = true;
             dtcCodes = [];
@@ -40,10 +55,15 @@ class _TroubleScanState extends State<TroubleScan> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
+            // ─── Engine Icon ──────────────────────────────────────
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Image.asset("assets/images/pngegg.png"),
             ),
+
+            const SizedBox(height: 16),
+
+            // ─── Scan Button ──────────────────────────────────────
             BlocConsumer<TroubleScanCubit, TroubleScanState>(
               listener: (context, state) {
                 if (state is DtcResultPos || state is DtcResultNeg) {
@@ -51,13 +71,13 @@ class _TroubleScanState extends State<TroubleScan> {
                 }
               },
               builder: (context, state) {
-                // Define colors based on the state
                 Color outerColor = state is DtcResultPos
                     ? const Color(0xffFF5C00)
-                    : const Color(0xff003FE5);
+                    : kPrimaryBlueColor;
                 Color inerColor = state is DtcResultPos
                     ? const Color(0xffFFD600)
                     : const Color(0xff618bf8);
+
                 if (state is RequistDtc) {
                   BlocProvider.of<BluetoothCubit>(context).send = false;
                 } else {
@@ -70,6 +90,23 @@ class _TroubleScanState extends State<TroubleScan> {
 
                 return CustomRecButton(
                   onTap: () {
+                    // Validation: Must be connected to the car first!
+                    if (BlocProvider.of<BluetoothCubit>(context).device == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            AppLocalizations.of(context)!.localeName == 'ar' 
+                            ? 'يرجى الاتصال بالسيارة أولاً عبر البلوتوث لفحص الأعطال.' 
+                            : 'Please connect to the car via Bluetooth to scan for DTCs.'
+                          ),
+                          backgroundColor: kDangerColor,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                        )
+                      );
+                      return;
+                    }
+
                     if (buttonNav) {
                       Navigator.push(
                           context,
@@ -88,14 +125,12 @@ class _TroubleScanState extends State<TroubleScan> {
                         ? SizedBox(
                             height: 3.h,
                             child: Image.asset("assets/images/frogcarspin.gif"))
-                        // const CircularProgressIndicator(
-                        //     color: kPrimaryBlueColor,
-                        //   )
                         : state is DtcResultPos
                             ? Text(
-                                AppLocalizations.of(context)!.dtcDetected(dtcCodes!.length),
+                                AppLocalizations.of(context)!
+                                    .dtcDetected(dtcCodes.length),
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 12.sp,
                                   color: Colors.white,
                                 ),
@@ -104,7 +139,7 @@ class _TroubleScanState extends State<TroubleScan> {
                                 ? Text(
                                     AppLocalizations.of(context)!.noDtcDetected,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w700,
                                       fontSize: 15.sp,
                                       color: Colors.white,
                                     ),
@@ -112,7 +147,7 @@ class _TroubleScanState extends State<TroubleScan> {
                                 : Text(
                                     AppLocalizations.of(context)!.scanDtcCodes,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w700,
                                       fontSize: 15.sp,
                                       color: Colors.white,
                                     ),
@@ -121,9 +156,10 @@ class _TroubleScanState extends State<TroubleScan> {
                 );
               },
             ),
-            SizedBox(
-              height: 4.h,
-            ),
+
+            SizedBox(height: 4.h),
+
+            // ─── Clear Button ─────────────────────────────────────
             GestureDetector(
               onTap: () {
                 dtcCodes = [];
@@ -137,24 +173,23 @@ class _TroubleScanState extends State<TroubleScan> {
               child: Container(
                 width: double.maxFinite,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: kSurface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: kPrimaryBlueColor, width: 2),
+                  border: Border.all(color: kAccentColor.withValues(alpha: 0.5), width: 1.5),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Center(
-                      child: Text(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text(
                     AppLocalizations.of(context)!.clearDtcCodes,
                     style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15.sp,
-                      color: kPrimaryBlueColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.sp,
+                      color: kAccentColor,
                     ),
-                  )),
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

@@ -28,7 +28,53 @@ Map<String, dynamic> requistedData = {
   "shortTermFuelBank1": "0",
   "throttlePosition": "0",
   "timingAdvance": "0",
+  "mileage": "0",      // Computed: total distance in km
+  "avgFuel": "0",     // Computed: estimated avg fuel consumption L/100km
 };
+
+// Tracking variables for computed metrics
+DateTime? _lastSpeedUpdateTime;
+double _totalDistanceKm = 0.0;
+double _fuelAccumulator = 0.0;
+double _distanceAccumulatorForFuel = 0.0;
+
+/// Call every time speed is updated to accumulate mileage and avg fuel.
+void updateComputedMetrics(double speedKmh, double fuelTrimPercent) {
+  final now = DateTime.now();
+  if (_lastSpeedUpdateTime != null && speedKmh > 0) {
+    // Time elapsed in hours
+    final elapsedHours =
+        now.difference(_lastSpeedUpdateTime!).inMilliseconds / 3600000.0;
+
+    // Distance = Speed * Time
+    final distanceDelta = speedKmh * elapsedHours;
+    _totalDistanceKm += distanceDelta;
+    requistedData['mileage'] = _totalDistanceKm.toStringAsFixed(1);
+
+    // Avg fuel estimate: base 8 L/100km adjusted by fuel trim %
+    // fuel trim is a correction factor: positive = lean (less fuel), negative = rich (more fuel)
+    final baseFuelRate = 8.0;
+    final fuelRate = baseFuelRate * (1.0 + (fuelTrimPercent / 100.0));
+    _fuelAccumulator += fuelRate * distanceDelta / 100.0;
+    _distanceAccumulatorForFuel += distanceDelta;
+
+    if (_distanceAccumulatorForFuel > 0) {
+      final avgFuelPer100 =
+          (_fuelAccumulator / _distanceAccumulatorForFuel) * 100.0;
+      requistedData['avgFuel'] = avgFuelPer100.toStringAsFixed(1);
+    }
+  }
+  _lastSpeedUpdateTime = now;
+}
+
+void resetComputedMetrics() {
+  _lastSpeedUpdateTime = null;
+  _totalDistanceKm = 0.0;
+  _fuelAccumulator = 0.0;
+  _distanceAccumulatorForFuel = 0.0;
+  requistedData['mileage'] = '0';
+  requistedData['avgFuel'] = '0';
+}
 
 String paramJSON = '''
     [

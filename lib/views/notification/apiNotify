@@ -1,8 +1,11 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:sayartii/constants.dart';
+import 'package:sayartii/utils/initialize_car_data.dart';
+import 'package:sayartii/views/notification/local_notification.dart';
 
 Future<void> predictIssue() async {
-  String url = 'https://ai.seere.live/predict';
+  String url = '$kAiUrl/predict';
   Map<String, dynamic> data = {
     "engine_power": 1.60,
     "engine_coolant_temp": 66.00,

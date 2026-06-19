@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:sayartii/services/api/api.dart';
+
+import 'package:sayartii/constants.dart';
 
 import '../models/prediction_model.dart';
 
@@ -17,7 +18,7 @@ class PredictService {
       required double throttle_pos,
       required double timing_advance}) async {
     Map<String, dynamic> data =
-        await Api().post(url: "http://54.236.94.229:5050/predict", body:jsonEncode({
+        await Api().post(url: "$kAiUrl/predict", body:jsonEncode({
       "engine_power": engine_power,
       "engine_coolant_temp": engine_coolant_temp,
       "engine_load": engine_load,

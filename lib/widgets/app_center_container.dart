@@ -24,6 +24,7 @@ class AppCenterContainer extends StatelessWidget {
   final bool isSvg;
   final bool isTap;
   final Widget? rout;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -39,7 +40,7 @@ class AppCenterContainer extends StatelessWidget {
       child: Container(
         height: hight,
         width: width,
-        decoration: boxDecoration(radius: 24),
+        decoration: glassDecoration(radius: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -47,20 +48,16 @@ class AppCenterContainer extends StatelessWidget {
               height: imgSize.h,
               width: double.infinity,
               child: isSvg
-                  ? SvgPicture.asset(
-                      image,
-                      // fit: BoxFit.cover,
-                    )
-                  : Image.asset(
-                      image,
-                      // fit: BoxFit.cover,
-                    ),
+                  ? SvgPicture.asset(image)
+                  : Image.asset(image),
             ),
+            const SizedBox(height: 8),
             Text(
               lable,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 13.sp,
+                fontSize: 11.sp,
+                color: kSecondaryTextColor,
               ),
             ),
           ],

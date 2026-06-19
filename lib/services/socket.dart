@@ -22,28 +22,75 @@ Future<Socket> connectToServer({required String ip, required int port}) async {
   return socket!;
 }
 
+String parseObdValue(String pid, String hexValue) {
+  // Clean up hexValue by removing spaces and non-hex chars
+  String cleanHex = hexValue.replaceAll(RegExp(r'[^0-9a-fA-F]'), '');
+  if (cleanHex.isEmpty) return '0';
+
+  // Split cleanHex into 2-character bytes
+  List<int> bytes = [];
+  for (int i = 0; i < cleanHex.length; i += 2) {
+    if (i + 2 <= cleanHex.length) {
+      String byteStr = cleanHex.substring(i, i + 2);
+      int? val = int.tryParse(byteStr, radix: 16);
+      if (val != null) {
+        bytes.add(val);
+      }
+    }
+  }
+
+  if (bytes.isEmpty) return '0';
+
+  try {
+    switch (pid) {
+      case '05': // Engine Coolant Temp: [0] - 40
+        return (bytes[0] - 40).toString();
+      case '04': // Engine Load: [0] * 100 / 255
+        return ((bytes[0] * 100) / 255).toStringAsFixed(1);
+      case '0C': // Engine RPM: (( [0] * 256) + [1] ) / 4
+        if (bytes.length >= 2) {
+          return (((bytes[0] * 256) + bytes[1]) / 4).toStringAsFixed(1);
+        }
+        break;
+      case '0F': // Air Intake Temp: [0] - 40
+        return (bytes[0] - 40).toString();
+      case '0D': // Speed: [0]
+        return bytes[0].toString();
+      case '06': // Short Term Fuel Bank 1: ([0] - 128) * 100 / 128
+        return (((bytes[0] - 128) * 100) / 128).toStringAsFixed(1);
+      case '11': // Throttle Position: [0] * 100 / 255
+        return ((bytes[0] * 100) / 255).toStringAsFixed(1);
+      case '0E': // Timing Advance: ([0] - 128) * 0.5
+        return ((bytes[0] - 128) * 0.5).toStringAsFixed(1);
+    }
+  } catch (e) {
+    print('Error parsing PID $pid value $hexValue: $e');
+  }
+
+  return '0';
+}
+
 Future<void> reciveData(DataCubit dataCubit) async {
   socket!.listen(
     (Uint8List data) {
       final serverResponse = String.fromCharCodes(data);
-      // print('Server: $serverResponse');
       // Split the response into lines
       List<String> lines = serverResponse.split('\n');
 
       // Iterate over each line
       for (String line in lines) {
-        // Trim whitespace and split the line into parts
-        List<String> parts = line.trim().split(' ');
+        // Remove spaces for consistent parsing
+        String cleanLine = line.replaceAll(' ', '').trim();
 
         // Check if the line is a response to a current data request
-        if (parts.length > 2 && (parts[0] == '41' || parts[0] == '43')) {
-          // The second part is the PID, and the remaining parts are the value
-          String pid = parts[1];
-          String value = parts.sublist(2).join(' ');
-          print(value);
+        if (cleanLine.length >= 6 && (cleanLine.startsWith('41') || cleanLine.startsWith('43'))) {
+          // 410D3C... -> 41 (mode), 0D (pid), 3C... (value)
+          String pid = cleanLine.substring(2, 4);
+          String rawValue = cleanLine.substring(4);
+          String parsedValue = parseObdValue(pid, rawValue);
+          
           // Update the latest data
-          dataCubit.updateDataWifi(mapPidToName(pid), value);
-
+          dataCubit.updateDataWifi(mapPidToName(pid), parsedValue);
         }
       }
     },
