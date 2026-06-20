@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:sayartii/constants.dart';
-import 'package:sayartii/views/predicted_codes/predicted_codes.dart';
+import 'package:sayartii/views/predicted_codes/predicted_code_description.dart';
 
 
 late final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -23,12 +23,14 @@ Future<void> initializeNotifications() async{
   // Handle notification tap callback
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
-    onDidReceiveNotificationResponse: (NotificationResponse response) async{
+    onDidReceiveNotificationResponse: (NotificationResponse response) async {
       if (response.payload != null && response.payload!.isNotEmpty) {
         selectNotificationSubject.add(response.payload!);
-       navigatorKey.currentState?.push(
-          MaterialPageRoute(builder: (context) => const PredictedCodes()),
-    );
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => const PredictedCodeDescription(),
+          ),
+        );
       }
     },
   );

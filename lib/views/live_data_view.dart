@@ -15,12 +15,21 @@ class LiveData extends StatefulWidget {
 }
 
 class _LiveDataState extends State<LiveData> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kPrimaryBackGroundColor,
+      backgroundColor: const Color(0xFFEEF2FA),
       appBar: AppBar(
-        backgroundColor: kSurface,
+        backgroundColor: const Color(0xFFEEF2FA),
         foregroundColor: kPrimaryDarkColor,
         elevation: 0,
         centerTitle: true,
@@ -33,200 +42,280 @@ class _LiveDataState extends State<LiveData> {
             letterSpacing: -0.3,
           ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: kBorderColor),
-        ),
       ),
       body: BlocBuilder<DataCubit, DataState>(builder: (context, state) {
         final connected = state is BlueData || state is WifiData;
+
+        if (!connected) {
+          // ─── Not connected: show initial car screen ─────────────────
+          return _buildInitialScreen(context);
+        }
+
+        // ─── Connected: two-page swipe view ────────────────────────────
         return Column(
           children: [
-            // ─── Connection Banner ───────────────────────────────────
-            Container(
-              color: kSurface,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentPage = i),
                 children: [
-                  Row(children: [
-                    Container(
-                      width: 32, height: 32,
-                      decoration: BoxDecoration(
-                        color: connected ? kAccentSofter : kDividerColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.wifi_tethering_rounded,
-                          color: connected ? kAccentColor : kSubtleText, size: 16),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      AppLocalizations.of(context)!.liveDataStream,
-                      style: TextStyle(
-                          color: kPrimaryDarkColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13.sp),
-                    ),
-                  ]),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: connected
-                          ? kSuccessColor.withValues(alpha: 0.08)
-                          : kDividerColor,
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(
-                        color: connected
-                            ? kSuccessColor.withValues(alpha: 0.35)
-                            : kBorderColor,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6, height: 6,
-                          decoration: BoxDecoration(
-                            color: connected ? kSuccessColor : kSubtleText,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          connected
-                              ? AppLocalizations.of(context)!.connected
-                              : AppLocalizations.of(context)!.disconnected,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: connected ? kSuccessColor : kSubtleText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildInitialConnectedScreen(context),
+                  _buildMetricsScreen(context, state),
                 ],
               ),
             ),
-            Container(height: 1, color: kBorderColor),
-
-            if (connected)
-              Expanded(
-                child: Stack(
-                  children: [
-                    // Right aligned car background
-                    Positioned(
-                      right: -MediaQuery.of(context).size.width * 0.1,
-                      top: 10,
-                      bottom: 10,
-                      child: Opacity(
-                        opacity: 0.9,
-                        child: SvgPicture.asset(
-                          'assets/images/live_data_car.svg',
-                          height: MediaQuery.of(context).size.height,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
+            // ─── Page indicator dots ─────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20, top: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(2, (i) {
+                  final active = _currentPage == i;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: active ? 20 : 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: active ? kAccentColor : kBorderColor,
+                      borderRadius: BorderRadius.circular(100),
                     ),
-                    // Left aligned data
-                    Positioned.fill(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(28, 30, 20, 30),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _dataRow(context,
-                                data: requistedData["speed"] ?? "0", unit: "km/h",
-                                icon: "assets/icons/live_data_current_speed.svg",
-                                name: AppLocalizations.of(context)!.currentSpeedLabel),
-                            _dataRow(context,
-                                data: requistedData["engineRPM"] ?? "0", unit: "RPM",
-                                icon: "assets/icons/live_data_battery.svg",
-                                name: AppLocalizations.of(context)!.engineRpmLabel),
-                            _dataRow(context,
-                                data: requistedData["engineCoolantTemp"] ?? "0", unit: "°C",
-                                icon: "assets/icons/live_data_coolant.svg",
-                                name: AppLocalizations.of(context)!.engineCoolantLabel),
-                            _dataRow(context,
-                                data: requistedData["shortTermFuelBank1"] ?? "0", unit: "%",
-                                icon: "assets/icons/live_data_fuel.svg",
-                                name: AppLocalizations.of(context)!.fuelTrimLabel),
-                            _dataRow(context,
-                                data: requistedData["engineLoad"] ?? "0", unit: "%",
-                                icon: "assets/icons/live_data_load.svg",
-                                name: AppLocalizations.of(context)!.engineLoadLabel),
-                            _dataRow(context,
-                                data: requistedData["throttlePosition"] ?? "0", unit: "%",
-                                icon: "assets/icons/live_data_baseline-speed.svg",
-                                name: AppLocalizations.of(context)!.throttleLabel),
-                            _dataRow(context,
-                                data: requistedData["airintakeTemp"] ?? "0", unit: "°C",
-                                icon: "assets/icons/live_data_temperature.svg",
-                                name: AppLocalizations.of(context)!.airIntakeLabel),
-                            _dataRow(context,
-                                data: requistedData["timingAdvance"] ?? "0", unit: "°",
-                                icon: "assets/icons/live_data_pressure.svg",
-                                name: AppLocalizations.of(context)!.timingAdvanceLabel),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 72, height: 72,
-                        decoration: BoxDecoration(
-                          gradient: kAccentGradient,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: kAccentColor.withValues(alpha: 0.25),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.bluetooth_searching_rounded,
-                            color: Colors.white, size: 30),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppLocalizations.of(context)!.connectToDevice,
-                        style: TextStyle(
-                            color: kSecondaryTextColor, fontSize: 13.sp,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
+                  );
+                }),
               ),
+            ),
           ],
         );
       }),
     );
   }
 
+  // ─── Screen 1 (not connected) ─────────────────────────────────────────────
+  Widget _buildInitialScreen(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/home_car.png',
+                  height: MediaQuery.of(context).size.height * 0.38,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 28),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: kAccentColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      AppLocalizations.of(context)!.connectToDevice,
+                      style: TextStyle(
+                        color: kAccentColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  // ─── Screen 1 (connected) — car + "Reading..." ────────────────────────────
+  Widget _buildInitialConnectedScreen(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/images/live_data_car.svg',
+                  height: MediaQuery.of(context).size.height * 0.40,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 28),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: kAccentColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Reading real-time live data...',
+                      style: TextStyle(
+                        color: kAccentColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13.sp,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                // Swipe hint
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Swipe for sensor data',
+                      style: TextStyle(
+                        color: kSubtleText,
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.chevron_right_rounded,
+                        color: kSubtleText, size: 16),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Screen 2 — metrics + car side view ───────────────────────────────────
+  Widget _buildMetricsScreen(BuildContext context, DataState state) {
+    final l = AppLocalizations.of(context)!;
+    return Stack(
+      children: [
+        // Car image on right (top-down / side view)
+        Positioned(
+          right: -MediaQuery.of(context).size.width * 0.08,
+          top: 0,
+          bottom: 0,
+          child: Opacity(
+            opacity: 0.92,
+            child: SvgPicture.asset(
+              'assets/images/live_data_car.svg',
+              height: MediaQuery.of(context).size.height,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+
+        // Metrics list on left
+        Positioned.fill(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(28, 30, 20, 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _dataRow(context,
+                    data: requistedData["speed"] ?? "0",
+                    unit: "km/h",
+                    icon: "assets/icons/live_data_current_speed.svg",
+                    name: l.currentSpeedLabel),
+                _dataRow(context,
+                    data: requistedData["engineCoolantTemp"] ?? "0",
+                    unit: "%",
+                    icon: "assets/icons/live_data_coolant.svg",
+                    name: l.engineCoolantLabel),
+                _dataRow(context,
+                    data: requistedData["engineRPM"] ?? "0",
+                    unit: "rpm",
+                    icon: "assets/icons/live_data_battery.svg",
+                    name: l.engineRpmLabel),
+                _dataRow(context,
+                    data: requistedData["engineCoolantTemp"] ?? "0",
+                    unit: "°C",
+                    icon: "assets/icons/live_data_temperature.svg",
+                    name: 'Coolant temp.'),
+                _dataRow(context,
+                    data: requistedData["shortTermFuelBank1"] ?? "0",
+                    unit: "%",
+                    icon: "assets/icons/live_data_fuel.svg",
+                    name: l.fuelTrimLabel),
+                _dataRow(context,
+                    data: requistedData["engineLoad"] ?? "0",
+                    unit: "%",
+                    icon: "assets/icons/live_data_load.svg",
+                    name: l.engineLoadLabel),
+                _dataRow(context,
+                    data: requistedData["airintakeTemp"] ?? "0",
+                    unit: "°C",
+                    icon: "assets/icons/live_data_temperature.svg",
+                    name: l.airIntakeLabel),
+                _dataRow(context,
+                    data: requistedData["throttlePosition"] ?? "0",
+                    unit: "%",
+                    icon: "assets/icons/live_data_baseline-speed.svg",
+                    name: l.throttleLabel),
+                _dataRow(context,
+                    data: requistedData["timingAdvance"] ?? "0",
+                    unit: "kPa",
+                    icon: "assets/icons/live_data_pressure.svg",
+                    name: l.timingAdvanceLabel),
+                const SizedBox(height: 12),
+                // "Check more sensor data" link
+                GestureDetector(
+                  onTap: () {},
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Check more sensor data',
+                        style: TextStyle(
+                          color: kAccentColor,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.underline,
+                          decorationColor: kAccentColor,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded,
+                          color: kAccentColor, size: 14),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _dataRow(BuildContext context,
       {required data, required unit, required icon, required name}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 34),
+      padding: const EdgeInsets.only(bottom: 26),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             text: TextSpan(children: [
               TextSpan(
-                text: "$data",
+                text: "$data ",
                 style: TextStyle(
                     color: kPrimaryDarkColor,
-                    fontSize: 20.sp,
+                    fontSize: 19.sp,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.5),
               ),
@@ -234,25 +323,27 @@ class _LiveDataState extends State<LiveData> {
                 text: unit,
                 style: TextStyle(
                     color: kSecondaryTextColor,
-                    fontSize: 10.sp,
+                    fontSize: 9.sp,
                     fontWeight: FontWeight.w600),
               ),
             ]),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SvgPicture.asset(icon, width: 14, height: 14,
-                  colorFilter: const ColorFilter.mode(
-                      kAccentColor, BlendMode.srcIn)),
-              const SizedBox(width: 6),
+              SvgPicture.asset(icon,
+                  width: 13,
+                  height: 13,
+                  colorFilter:
+                      const ColorFilter.mode(kAccentColor, BlendMode.srcIn)),
+              const SizedBox(width: 5),
               Text(
                 name,
                 style: TextStyle(
                     color: kSecondaryTextColor,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w700),
+                    fontSize: 9.sp,
+                    fontWeight: FontWeight.w600),
               ),
             ],
           ),

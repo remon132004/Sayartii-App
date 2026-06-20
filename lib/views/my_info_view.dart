@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sayartii/models/prediction_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:sayartii/constants.dart';
@@ -10,6 +11,7 @@ import 'package:sayartii/views/registertion/login_package.dart';
 import 'package:sayartii/views/registertion/apiData.dart';
 import 'package:sayartii/views/notification/local_notification.dart';
 import 'package:sayartii/utils/initialize_car_data.dart';
+import 'package:sayartii/cubit/language_cubit.dart';
 import 'connect_device/cubit/bluetooth_cubit.dart';
 
 class MyInfoView extends StatefulWidget {
@@ -34,9 +36,9 @@ class _MyInfoViewState extends State<MyInfoView> {
     final p = await ApiService.getProfile();
     if (mounted) {
       setState(() {
-        _name  = (p['name'] != null && p['name']!.trim().isNotEmpty) ? p['name']! : 'User';
+        _name  = (p['name'] != null && p['name']!.trim().isNotEmpty) ? p['name']! : 'Sayartii User';
         _email = (p['email'] != null && p['email']!.trim().isNotEmpty) ? p['email']! : '';
-        _car   = (p['car'] != null && p['car']!.trim().isNotEmpty) ? p['car']! : '';
+        _car   = (p['car'] != null && p['car']!.trim().isNotEmpty) ? p['car']! : 'Mercedes C-Class';
       });
     }
   }
@@ -205,6 +207,37 @@ class _MyInfoViewState extends State<MyInfoView> {
                                         fontSize: 10,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 1)),
+                              ),
+                            ),
+                          ),
+                          _Sep(),
+
+                          GestureDetector(
+                            onTap: () =>
+                                BlocProvider.of<LanguageCubit>(context).toggleLanguage(),
+                            child: _Tile(
+                              icon: Icons.language_rounded,
+                              iconColor: const Color(0xFF0EA5E9),
+                              title: l.localeName == 'ar' ? 'تغيير اللغة' : 'Change Language',
+                              trailing: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0EA5E9)
+                                      .withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(100),
+                                  border: Border.all(
+                                      color: const Color(0xFF0EA5E9)
+                                          .withValues(alpha: 0.3)),
+                                ),
+                                child: Text(
+                                  l.localeName == 'ar' ? 'EN' : 'AR',
+                                  style: const TextStyle(
+                                      color: Color(0xFF0EA5E9),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 1),
+                                ),
                               ),
                             ),
                           ),
@@ -476,6 +509,15 @@ class _DemoModeSheetState extends State<_DemoModeSheet>
     if (_selected == null) return;
     final s = widget.scenarios[_selected!];
     if (!dtcCodes.contains(s.code)) dtcCodes.add(s.code);
+
+    // ── Populate global predictedCodesList so the details page has data ──
+    predictedCodesList = PredictionModel(
+      prediction: s.title,
+      troubleCode: s.code,
+      estimatedTimeRemaining: null,
+      openAiResponse: s.description,
+    );
+
     await showNotification(
       widget.isAr ? '⚠️ تحذير: عطل مكتشف' : '⚠️ Issue Detected by AI',
       widget.isAr
@@ -483,7 +525,8 @@ class _DemoModeSheetState extends State<_DemoModeSheet>
           : 'Your car reports: ${s.code} — ${s.title}. Open app for details.',
     );
     setState(() => _fired = true);
-    await Future.delayed(const Duration(seconds: 2));
+    // Close the bottom sheet immediately so the delayed pop doesn't
+    // accidentally dismiss the details page if the user taps the notification.
     if (mounted) Navigator.pop(context);
   }
 

@@ -112,7 +112,9 @@ class ApiService {
           'email': email,
           'password': password,
           'confirmPassword': confirmPassword,
-          'name': name
+          'name': name,
+          'carName': carName,
+          'carYear': carYear
         },
       );
       if (response.statusCode == 200) {
