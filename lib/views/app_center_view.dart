@@ -5,7 +5,6 @@ import 'package:sayartii/cubit/language_cubit.dart';
 import 'package:sayartii/l10n/app_localizations.dart';
 import 'package:sayartii/views/in_depth_check_view.dart';
 import 'package:sayartii/views/live_data_view.dart';
-import 'package:sayartii/views/nearby_mechanics_view.dart';
 import 'package:sayartii/views/trouble_scan/trouble_scan.dart';
 import 'package:sizer/sizer.dart';
 import 'predicted_codes/predicted_codes.dart';
@@ -23,7 +22,6 @@ class AppCenterView extends StatelessWidget {
       _Tool(label: l.predictedIssues, icon: Icons.query_stats_rounded,   color: const Color(0xFF7C3AED),   dest: const PredictedCodes()),
       _Tool(label: l.inDepthCheck,    icon: Icons.manage_search_rounded, color: const Color(0xFF059669),   dest: const InDepthCheckView()),
       _Tool(label: l.troubleScan,     icon: Icons.build_circle_outlined, color: const Color(0xFFD97706),   dest: const TroubleScan()),
-      _Tool(label: 'Nearby Mechanics', icon: Icons.location_on_rounded,  color: const Color(0xFF0D9488),   dest: const NearbyMechanicsView()),
     ];
 
     return Scaffold(

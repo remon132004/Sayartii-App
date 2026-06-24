@@ -49,8 +49,8 @@ class _CustomButtonState extends State<CustomChoiceChip> {
         onPressed: onPressed,
         style: TextButton.styleFrom(
             backgroundColor:
-                (BlocProvider.of<ConnectDeviceCubit>(context).enabled[name] == true ? const Color(0xff618BF8) : kPrimaryBlueColor),
-            foregroundColor: Colors.white,
+                (BlocProvider.of<ConnectDeviceCubit>(context).enabled[name] == true ? kAccentColor : kSurface),
+            foregroundColor: (BlocProvider.of<ConnectDeviceCubit>(context).enabled[name] == true ? Colors.white : kPrimaryDarkColor),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(0))),
         child: Text(

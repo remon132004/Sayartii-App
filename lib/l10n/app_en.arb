@@ -90,5 +90,40 @@
   "minSixChars": "Min 6 characters",
   "loginFailed": "Login failed. Please check your credentials.",
   "registrationFailed": "Registration failed. Please try again.",
-  "accountCreated": "Account created! Please log in."
+  "accountCreated": "Account created! Please log in.",
+  "nearbyMechanics": "Nearby Mechanics",
+  "locationsNearby": "{count} locations nearby",
+  "@locationsNearby": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yourLocation": "Your Location",
+  "mechanic": "Mechanic",
+  "partsStore": "Parts Store",
+  "viewOnMap": "View on Map",
+  "gettingLocation": "Getting your location…",
+  "locationError": "Could not get your location. Make sure GPS is on.",
+  "tryAgain": "Try Again",
+  "mAway": "{distance} m away",
+  "@mAway": {
+    "placeholders": {
+      "distance": {
+        "type": "int"
+      }
+    }
+  },
+  "kmAway": "{distance} km away",
+  "@kmAway": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "verifiedLocation": "Verified Location",
+  "demoLocation": "Demo Location",
+  "searchThisArea": "Search this area"
 }

@@ -26,21 +26,20 @@ class NearbyPlace {
 
 // ─── Geoapify Places Service ───────────────────────────────────────────────────
 class OverpassService {
-  static const _apiKey = 'e9cd40f1332d4951acbfdb356681310e';
-  static const _baseUrl = 'https://api.geoapify.com/v2/places';
 
-  // ── Instant mock data — always available, no internet needed ─────────────
+
+  // ── Instant mock data — dynamic based on user location for demo purposes ──
   static List<NearbyPlace> mockMechanics(double lat, double lon) => [
         NearbyPlace(
-          name: 'Auto Pro Service Center',
+          name: 'مركز المهندس لصيانة السيارات',
           lat: lat + 0.0030, lon: lon + 0.0020,
           type: PlaceType.mechanic,
-          phone: '+20 123 456 7890',
+          phone: '+20 100 123 4567',
           openingHours: '09:00 AM – 10:00 PM',
           isMock: true,
         ),
         NearbyPlace(
-          name: 'Speedy Tyres & Parts',
+          name: 'Speedy Auto Parts',
           lat: lat - 0.0020, lon: lon + 0.0040,
           type: PlaceType.partsStore,
           phone: '+20 111 222 3333',
@@ -48,14 +47,14 @@ class OverpassService {
           isMock: true,
         ),
         NearbyPlace(
-          name: 'Expert Car Repair',
+          name: 'ورشة الأسطى حسن الميكانيكي',
           lat: lat - 0.0040, lon: lon - 0.0030,
           type: PlaceType.mechanic,
           openingHours: 'Open 24 Hours',
           isMock: true,
         ),
         NearbyPlace(
-          name: 'Genuine Auto Parts',
+          name: 'الشركة الألمانية لقطع الغيار',
           lat: lat + 0.0010, lon: lon - 0.0050,
           type: PlaceType.partsStore,
           isMock: true,
@@ -64,74 +63,96 @@ class OverpassService {
           name: 'Quick Fix Workshop',
           lat: lat + 0.0060, lon: lon - 0.0010,
           type: PlaceType.mechanic,
-          phone: '+20 100 999 8888',
+          phone: '+20 122 999 8888',
           openingHours: '10:00 AM – 08:00 PM',
           isMock: true,
         ),
       ];
 
-  // ── Try to fetch REAL places from Geoapify ────────────────────────────────
+  // ── Try to fetch REAL places from Overpass API ────────────────────────────
   static Future<List<NearbyPlace>?> tryFetchReal({
     required double lat,
     required double lon,
-    int radius = 5000,
+    int radius = 10000, // Increased to 10km for better coverage
   }) async {
-    // Geoapify categories: car_repair + car_parts + tyres
-    const categories =
-        'service.vehicle.car_repair,service.vehicle.car_parts,service.vehicle.tyres';
+    final query = '''
+[out:json][timeout:15];
+(
+  node["shop"="car_repair"](around:$radius,$lat,$lon);
+  way["shop"="car_repair"](around:$radius,$lat,$lon);
+  node["amenity"="car_repair"](around:$radius,$lat,$lon);
+  way["amenity"="car_repair"](around:$radius,$lat,$lon);
+  node["craft"="car_repair"](around:$radius,$lat,$lon);
+  way["craft"="car_repair"](around:$radius,$lat,$lon);
+  node["shop"="car_parts"](around:$radius,$lat,$lon);
+  way["shop"="car_parts"](around:$radius,$lat,$lon);
+  node["shop"="tyres"](around:$radius,$lat,$lon);
+  way["shop"="tyres"](around:$radius,$lat,$lon);
+  node["service"="car_repair"](around:$radius,$lat,$lon);
+  way["service"="car_repair"](around:$radius,$lat,$lon);
+);
+out center;
+''';
 
-    final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-      'categories': categories,
-      'filter': 'circle:$lon,$lat,$radius', // NOTE: lon comes first for Geoapify
-      'limit': '20',
-      'apiKey': _apiKey,
-    });
+    final endpoints = [
+      'https://overpass-api.de/api/interpreter',
+      'https://lz4.overpass-api.de/api/interpreter',
+      'https://overpass.kumi.systems/api/interpreter',
+      'https://z.overpass-api.de/api/interpreter'
+    ];
+
+    Map<String, dynamic>? json;
+
+    for (final url in endpoints) {
+      try {
+        final res = await http
+            .post(Uri.parse(url), body: {'data': query})
+            .timeout(const Duration(seconds: 8));
+
+        if (res.statusCode == 200) {
+          json = jsonDecode(res.body) as Map<String, dynamic>;
+          break; // Succeeded! Stop trying mirrors
+        }
+      } catch (_) {
+        // Try next mirror
+      }
+    }
+
+    if (json == null) return null;
 
     try {
-      final res = await http
-          .get(uri, headers: {'Accept': 'application/json'})
-          .timeout(const Duration(seconds: 10));
-
-      if (res.statusCode != 200) return null;
-
-      final json = jsonDecode(res.body) as Map<String, dynamic>;
-      final features = (json['features'] as List?) ?? [];
-
+      final elements = (json['elements'] as List?) ?? [];
       final places = <NearbyPlace>[];
 
-      for (final feature in features) {
-        final props = (feature['properties'] as Map<String, dynamic>?) ?? {};
-        final geometry = (feature['geometry'] as Map<String, dynamic>?) ?? {};
+      for (final element in elements) {
+        final tags = (element['tags'] as Map<String, dynamic>?) ?? {};
 
-        // Coordinates — GeoJSON order is [lon, lat]
-        final coords = (geometry['coordinates'] as List?) ?? [];
-        if (coords.length < 2) continue;
+        double? eLat;
+        double? eLon;
+        if (element['type'] == 'node') {
+          eLat = (element['lat'] as num?)?.toDouble();
+          eLon = (element['lon'] as num?)?.toDouble();
+        } else if (element['type'] == 'way') {
+          final center = element['center'] as Map<String, dynamic>?;
+          eLat = (center?['lat'] as num?)?.toDouble();
+          eLon = (center?['lon'] as num?)?.toDouble();
+        }
 
-        final eLon = (coords[0] as num?)?.toDouble();
-        final eLat = (coords[1] as num?)?.toDouble();
         if (eLat == null || eLon == null || !eLat.isFinite || !eLon.isFinite) {
           continue;
         }
 
-        // Name
-        final name = props['name'] as String? ??
-            props['address_line1'] as String? ??
-            'Car Service';
+        final name = tags['name'] as String? ??
+            tags['name:en'] as String? ??
+            tags['name:ar'] as String? ??
+            'مركز صيانة سيارات';
 
-        // Classify type from categories list
-        final cats = (props['categories'] as List?)
-                ?.map((c) => c.toString())
-                .toList() ??
-            [];
-        final isPartsOrTyres = cats
-            .any((c) => c.contains('car_parts') || c.contains('tyres'));
+        final shop = tags['shop'] as String?;
+        final isPartsOrTyres = shop == 'car_parts' || shop == 'tyres';
         final type = isPartsOrTyres ? PlaceType.partsStore : PlaceType.mechanic;
 
-        // Contact info
-        final contact = props['contact'] as Map<String, dynamic>?;
-        final phone = contact?['phone'] as String? ??
-            props['phone'] as String?;
-        final openingHours = props['opening_hours'] as String?;
+        final phone = tags['phone'] as String? ?? tags['contact:phone'] as String?;
+        final openingHours = tags['opening_hours'] as String?;
 
         places.add(NearbyPlace(
           name: name,
@@ -140,12 +161,20 @@ class OverpassService {
           type: type,
           phone: phone,
           openingHours: openingHours,
+          isMock: false,
         ));
       }
 
-      return places; // may be empty list — caller decides what to do
+      // ── Graduation Project Fallback ──
+      // If OpenStreetMap data is sparse in this specific area, we inject dynamic
+      // mock data around the coordinates so the demo never looks empty.
+      if (places.length < 3) {
+        places.addAll(mockMechanics(lat, lon));
+      }
+
+      return places;
     } catch (_) {
-      return null; // silently fall back to mock
+      return null;
     }
   }
 }

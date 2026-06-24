@@ -151,7 +151,7 @@ class _MyInfoViewState extends State<MyInfoView> {
 
                           _Tile(
                             icon: Icons.query_stats_rounded,
-                            iconColor: const Color(0xFF7C3AED),
+                            iconColor: kAccentColor,
                             title: l.startPrediction,
                             trailing: FlutterSwitch(
                               activeColor: kAccentColor,
@@ -217,23 +217,23 @@ class _MyInfoViewState extends State<MyInfoView> {
                                 BlocProvider.of<LanguageCubit>(context).toggleLanguage(),
                             child: _Tile(
                               icon: Icons.language_rounded,
-                              iconColor: const Color(0xFF0EA5E9),
+                              iconColor: kAccentColor,
                               title: l.localeName == 'ar' ? 'تغيير اللغة' : 'Change Language',
                               trailing: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0EA5E9)
+                                  color: kAccentColor
                                       .withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(100),
                                   border: Border.all(
-                                      color: const Color(0xFF0EA5E9)
+                                      color: kAccentColor
                                           .withValues(alpha: 0.3)),
                                 ),
                                 child: Text(
                                   l.localeName == 'ar' ? 'EN' : 'AR',
                                   style: const TextStyle(
-                                      color: Color(0xFF0EA5E9),
+                                      color: kAccentColor,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: 1),

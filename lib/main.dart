@@ -66,7 +66,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Sayartii',
             theme: ThemeData(
-              primaryColor: const Color(0xFF235DFF),
+              primaryColor: kAccentColor,
               scaffoldBackgroundColor: kPrimaryBackGroundColor,
               textSelectionTheme:
                   const TextSelectionThemeData(cursorColor: Colors.white),
@@ -86,7 +86,7 @@ class MyApp extends StatelessWidget {
                   fontFamily: 'NotoSans',
                   fontSize: 12.0,
                   fontWeight: FontWeight.normal,
-                  color: Color(0xFF235DFF),
+                  color: kAccentColor,
                 ),
                 displayLarge: TextStyle(fontFamily: 'Quicksand'),
                 displayMedium: TextStyle(fontFamily: 'Quicksand'),

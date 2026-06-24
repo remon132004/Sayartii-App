@@ -19,36 +19,7 @@ class Bluetooth extends StatefulWidget {
 }
 
 class _BluetoothState extends State<Bluetooth> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndPromptBluetooth();
-    });
-  }
 
-  Future<void> _checkAndPromptBluetooth() async {
-    bool isEnabled = await BlocProvider.of<BluetoothCubit>(context).obd2.isBluetoothEnable;
-    if (!isEnabled) {
-      if (mounted) {
-        final l = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l.bluetoothOffPrompt),
-            duration: const Duration(seconds: 10),
-            backgroundColor: const Color(0xFF1E293B),
-            action: SnackBarAction(
-              label: l.yes,
-              textColor: kPrimaryBlueColor,
-              onPressed: () async {
-                await BlocProvider.of<BluetoothCubit>(context).bluetoothButton();
-              },
-            ),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +42,7 @@ class _BluetoothState extends State<Bluetooth> {
           },
         ),
         SizedBox(height: 3.h),
-        const Divider(color: Color(0xFF1E293B), height: 0),
+        const Divider(color: kBorderColor, height: 0),
         SizedBox(height: 3.h),
         BlocConsumer<BluetoothCubit, BluetoothState>(
           listener: (context, state) {
@@ -162,7 +133,7 @@ Future<void> showBluetoothList(
     BuildContext context, List<BluetoothDevice> devices) async {
   if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
   showModalBottomSheet(
-    backgroundColor: const Color(0xFF0D1220),
+    backgroundColor: kSurface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -176,20 +147,20 @@ Future<void> showBluetoothList(
             Container(
                 width: 40, height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF334155),
+                  color: kBorderColor,
                   borderRadius: BorderRadius.circular(2),
                 )),
             const SizedBox(height: 16),
             const Text(
               'Select Device',
               style: TextStyle(
-                color: Color(0xFFF1F5F9),
+                color: kPrimaryDarkColor,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
-            const Divider(color: Color(0xFF1E293B)),
+            const Divider(color: kBorderColor),
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 320),
               child: ListView.builder(
@@ -202,7 +173,7 @@ Future<void> showBluetoothList(
                     title: Text(
                       devices[index].name ?? 'Unknown Device',
                       style: const TextStyle(
-                          color: Color(0xFFF1F5F9),
+                          color: kPrimaryDarkColor,
                           fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(

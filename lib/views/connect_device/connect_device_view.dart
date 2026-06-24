@@ -42,13 +42,14 @@ class _ConnectDeviceViewState extends State<ConnectDeviceView> {
               children: [
                 const CustomChoiceChip(),
                 BlocBuilder<ConnectDeviceCubit, ConnectDeviceState>(
-                    builder: (context, state) {
-                  if (state is ConnectDeviceWifiState) {
-                    return const WiFi();
-                  } else {
-                    return const Bluetooth();
-                  }
-                })
+                  builder: (context, state) {
+                    if (state is ConnectDeviceWifiState) {
+                      return const WiFi();
+                    } else {
+                      return const Bluetooth();
+                    }
+                  },
+                ),
               ],
             ),
           ),

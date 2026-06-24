@@ -83,3 +83,10 @@ flutter:
     - family: MyFlutterApp
       fonts:
         - asset: assets/icons/MyFlutterApp.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/Quicksand-Bold.ttf
+          weight: 700

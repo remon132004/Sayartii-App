@@ -3,6 +3,7 @@ import 'package:sayartii/constants.dart';
 import 'package:sayartii/views/app_center_view.dart';
 import 'package:sayartii/views/home/home_view.dart';
 import 'package:sayartii/views/my_info_view.dart';
+import 'package:sayartii/views/nearby_mechanics_view.dart';
 import 'package:sayartii/l10n/app_localizations.dart';
 
 class NavContainer extends StatefulWidget {
@@ -17,6 +18,7 @@ class _NavContainerState extends State<NavContainer> {
   final List<Widget> _screens = const [
     HomeView(),
     AppCenterView(),
+    NearbyMechanicsView(),
     MyInfoView(),
   ];
 
@@ -35,6 +37,11 @@ class _NavContainerState extends State<NavContainer> {
         icon: Icons.grid_view_outlined,
         activeIcon: Icons.grid_view_rounded,
         label: l.applicationCenter,
+      ),
+      _TabItem(
+        icon: Icons.location_on_outlined,
+        activeIcon: Icons.location_on_rounded,
+        label: l.nearbyMechanics,
       ),
       _TabItem(
         icon: Icons.person_outline_rounded,

@@ -128,6 +128,20 @@ String dtcJSON = '''
 		        "command": "03",
 		        "response": "",
 		        "status": true
+		     },
+         {
+		        "id": 2,
+		        "created_at": "2021-12-05T16:33:18.965620Z",
+		        "command": "07",
+		        "response": "",
+		        "status": true
+		     },
+         {
+		        "id": 3,
+		        "created_at": "2021-12-05T16:33:18.965620Z",
+		        "command": "0A",
+		        "response": "",
+		        "status": true
 		     }
 		 ]
       ''';

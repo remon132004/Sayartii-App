@@ -263,4 +263,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountCreated => 'Account created! Please log in.';
+
+  @override
+  String get nearbyMechanics => 'Nearby Mechanics';
+
+  @override
+  String locationsNearby(int count) {
+    return '$count locations nearby';
+  }
+
+  @override
+  String get yourLocation => 'Your Location';
+
+  @override
+  String get mechanic => 'Mechanic';
+
+  @override
+  String get partsStore => 'Parts Store';
+
+  @override
+  String get viewOnMap => 'View on Map';
+
+  @override
+  String get gettingLocation => 'Getting your location…';
+
+  @override
+  String get locationError =>
+      'Could not get your location. Make sure GPS is on.';
+
+  @override
+  String get tryAgain => 'Try Again';
+
+  @override
+  String mAway(int distance) {
+    return '$distance m away';
+  }
+
+  @override
+  String kmAway(String distance) {
+    return '$distance km away';
+  }
+
+  @override
+  String get verifiedLocation => 'Verified Location';
+
+  @override
+  String get demoLocation => 'Demo Location';
+
+  @override
+  String get searchThisArea => 'Search this area';
 }

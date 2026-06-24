@@ -15,13 +15,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get home => 'الرئيسية';
 
   @override
-  String get applicationCenter => 'مركز التطبيقات';
+  String get applicationCenter => 'أدوات الفحص';
 
   @override
   String get myInfo => 'حسابي';
 
   @override
-  String get applicationCenterTitle => 'مركز التطبيقات';
+  String get applicationCenterTitle => 'أدوات التشخيص';
 
   @override
   String get myTools => 'أدواتي :';
@@ -30,13 +30,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get predictedIssues => 'التنبؤ بالأعطال';
 
   @override
-  String get liveData => 'البيانات الحية';
+  String get liveData => 'قراءة الحساسات';
 
   @override
   String get troubleScan => 'فحص الأعطال';
 
   @override
-  String get inDepthCheck => 'فحص دقيق';
+  String get inDepthCheck => 'فحص شامل';
 
   @override
   String get troubleScanningTitle => 'فحص الأعطال السريع';
@@ -49,14 +49,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String dtcDetected(int count) {
-    return 'تم اكتشاف $count عطل';
+    return 'تم رصد $count أعطال';
   }
 
   @override
-  String get noDtcDetected => 'لا يوجد أعطال';
+  String get noDtcDetected => 'لا توجد أعطال مسجلة';
 
   @override
-  String get activatePairedDevice => 'بدء الاتصال بالسيارة';
+  String get activatePairedDevice => 'الاتصال بوحدة الـ OBD';
 
   @override
   String get drivingData => 'بيانات القيادة';
@@ -65,19 +65,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get currentSpeed => 'السرعة الحالية';
 
   @override
-  String get realTimeSpeed => 'السرعة الفورية بناءً على الـ OBD';
+  String get realTimeSpeed => 'السرعة الفعلية من حاسوب السيارة';
 
   @override
-  String get engineRpm => 'دوران المحرك';
+  String get engineRpm => 'عدد لفات المحرك (RPM)';
 
   @override
-  String get realTimeRpm => 'دوران المحرك الآني بناءً على الـ OBD';
+  String get realTimeRpm => 'قراءة الـ RPM المباشرة من المحرك';
 
   @override
   String get notAvailable => 'غير متاح';
 
   @override
-  String get carName => 'اسم السيارة';
+  String get carName => 'طراز المركبة';
 
   @override
   String get startPrediction => 'تفعيل التنبؤ الذكي';
@@ -89,7 +89,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logOut => 'تسجيل الخروج';
 
   @override
-  String get areYouSureLogOut => 'هل أنت متأكد من تسجيل الخروج؟';
+  String get areYouSureLogOut => 'هل تود تأكيد تسجيل الخروج؟';
 
   @override
   String get continueBtn => 'استمرار';
@@ -101,53 +101,53 @@ class AppLocalizationsAr extends AppLocalizations {
   String get changeLanguage => 'تغيير اللغة';
 
   @override
-  String get obdLiveData => 'البيانات الحية OBD';
+  String get obdLiveData => 'البيانات الحية للحساسات';
 
   @override
   String get predictedCodesTitle => 'الأعطال المتوقعة';
 
   @override
-  String get noIssuesDetected => 'لا توجد أعطال مكتشفة';
+  String get noIssuesDetected => 'لم يتم رصد أي أعطال';
 
   @override
-  String get connectToDevice => 'قم بتوصيل الجهاز';
+  String get connectToDevice => 'الرجاء الاتصال بقطعة الـ OBD';
 
   @override
   String get currentSpeedLabel => 'السرعة الحالية';
 
   @override
-  String get engineRpmLabel => 'دوران المحرك';
+  String get engineRpmLabel => 'لفة/دقيقة (RPM)';
 
   @override
-  String get engineCoolantLabel => 'حرارة المياه';
+  String get engineCoolantLabel => 'حرارة سائل التبريد';
 
   @override
-  String get fuelTrimLabel => 'نسبة الوقود القصيرة';
+  String get fuelTrimLabel => 'موازنة الوقود (Fuel Trim)';
 
   @override
-  String get engineLoadLabel => 'حمل المحرك';
+  String get engineLoadLabel => 'حِمل المحرك (Load)';
 
   @override
-  String get throttleLabel => 'موضع الخانق';
+  String get throttleLabel => 'دعسة البنزين (Throttle)';
 
   @override
-  String get airIntakeLabel => 'حرارة هواء المحرك';
+  String get airIntakeLabel => 'حرارة هواء السحب (Intake)';
 
   @override
-  String get timingAdvanceLabel => 'تقدم التوقيت';
+  String get timingAdvanceLabel => 'توقيت الإشعال (Timing)';
 
   @override
   String get inDepthCheckTitle => 'الفحص الشامل';
 
   @override
-  String get inDepthCheckSoon => 'هذه الميزة قادمة قريباً!';
+  String get inDepthCheckSoon => 'قريباً في التحديثات القادمة!';
 
   @override
   String get aboutUsTitle => 'عن سيارتي';
 
   @override
   String get aboutUsDesc =>
-      'سيارتي هو تطبيق تشخيص سيارات مدعوم بالذكاء الاصطناعي، يتصل بسيارتك عبر OBD-II ويساعدك على اكتشاف الأعطال والتنبؤ بها قبل أن تتفاقم.';
+      'سيارتي هو تطبيق تشخيص سيارات احترافي مدعوم بالذكاء الاصطناعي، يتصل بسيارتك عبر منفذ OBD-II ويساعدك على اكتشاف الأعطال والتنبؤ بها بدقة قبل تفاقمها.';
 
   @override
   String get vehicleLabel => 'المركبة';
@@ -156,7 +156,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get userName => 'المستخدم';
 
   @override
-  String get premiumMembership => 'عضوية مميزة';
+  String get premiumMembership => 'النسخة الاحترافية (Pro)';
 
   @override
   String get connected => 'متصل';
@@ -165,7 +165,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get disconnected => 'غير متصل';
 
   @override
-  String get liveDataStream => 'بث البيانات المباشر';
+  String get liveDataStream => 'مراقبة الحساسات المباشرة';
 
   @override
   String get aboutSayartii => 'عن سيارتي';
@@ -175,16 +175,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get bluetoothOffPrompt =>
-      'البلوتوث مغلق. هل تريد تشغيله للاتصال بسيارتك؟';
+      'البلوتوث غير مفعل. الرجاء تشغيله للتمكن من الاتصال بقطعة الـ OBD.';
 
   @override
-  String get yes => 'نعم';
+  String get yes => 'تفعيل';
 
   @override
   String get disconnect => 'قطع الاتصال';
 
   @override
-  String get searchBluetooth => 'البحث عن الأجهزة';
+  String get searchBluetooth => 'البحث عن أجهزة OBD';
 
   @override
   String get connecting => 'جارٍ الاتصال...';
@@ -193,34 +193,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notConnected => 'غير متصل';
 
   @override
-  String get mileage => 'المسافة';
+  String get mileage => 'المسافة المقطوعة';
 
   @override
   String get totalDistance => 'إجمالي المسافة';
 
   @override
-  String get avgFuel => 'متوسط الوقود';
+  String get avgFuel => 'متوسط استهلاك الوقود';
 
   @override
-  String get estimatedConsumption => 'استهلاك تقديري';
+  String get estimatedConsumption => 'الاستهلاك التقديري';
 
   @override
   String get loginTab => 'تسجيل الدخول';
 
   @override
-  String get signUpTab => 'إنشاء حساب';
+  String get signUpTab => 'حساب جديد';
 
   @override
-  String get welcomeBack => 'مرحباً بعودتك! سجّل دخولك للمتابعة';
+  String get welcomeBack => 'مرحباً بك! قم بتسجيل الدخول للمتابعة';
 
   @override
-  String get createAccountSub => 'أنشئ حسابك للبدء';
+  String get createAccountSub => 'قم بإنشاء حسابك الجديد للبدء';
 
   @override
-  String get fullName => 'الاسم الكامل';
+  String get fullName => 'الاسم بالكامل';
 
   @override
-  String get vehicleModel => 'موديل السيارة';
+  String get vehicleModel => 'نوع وموديل السيارة';
 
   @override
   String get modelYear => 'سنة الصنع';
@@ -247,20 +247,69 @@ class AppLocalizationsAr extends AppLocalizations {
   String get alreadyAccount => 'لديك حساب بالفعل؟ ';
 
   @override
-  String get nameRequired => 'الاسم مطلوب';
+  String get nameRequired => 'يجب إدخال الاسم';
 
   @override
   String get enterValidEmail => 'أدخل بريد إلكتروني صحيح';
 
   @override
-  String get minSixChars => '6 أحرف على الأقل';
+  String get minSixChars => 'يجب ألا تقل عن 6 أحرف';
 
   @override
-  String get loginFailed => 'فشل تسجيل الدخول. تحقق من بيانات الحساب.';
+  String get loginFailed => 'فشل تسجيل الدخول. يرجى التأكد من صحة البيانات.';
 
   @override
-  String get registrationFailed => 'فشل إنشاء الحساب. حاول مجدداً.';
+  String get registrationFailed => 'فشل إنشاء الحساب. يرجى المحاولة لاحقاً.';
 
   @override
-  String get accountCreated => 'تم إنشاء الحساب! سجّل دخولك الآن.';
+  String get accountCreated =>
+      'تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.';
+
+  @override
+  String get nearbyMechanics => 'الورش القريبة';
+
+  @override
+  String locationsNearby(int count) {
+    return '$count أماكن قريبة';
+  }
+
+  @override
+  String get yourLocation => 'موقعك';
+
+  @override
+  String get mechanic => 'ورشة';
+
+  @override
+  String get partsStore => 'قطع غيار';
+
+  @override
+  String get viewOnMap => 'عرض على الخريطة';
+
+  @override
+  String get gettingLocation => 'جاري تحديد موقعك...';
+
+  @override
+  String get locationError => 'تعذر تحديد الموقع. تأكد من تفعيل الـ GPS.';
+
+  @override
+  String get tryAgain => 'حاول مرة أخرى';
+
+  @override
+  String mAway(int distance) {
+    return '$distance متر';
+  }
+
+  @override
+  String kmAway(String distance) {
+    return '$distance كم';
+  }
+
+  @override
+  String get verifiedLocation => 'موقع موثق';
+
+  @override
+  String get demoLocation => 'موقع تجريبي';
+
+  @override
+  String get searchThisArea => 'البحث في هذه المنطقة';
 }

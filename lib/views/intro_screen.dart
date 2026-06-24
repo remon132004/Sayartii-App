@@ -77,7 +77,7 @@ class _OnBoardingState extends State<OnBoarding> with TickerProviderStateMixin {
             ? 'الذكاء الاصطناعي يحلل بيانات محركك ويكتشف الأعطال قبل أن تتفاقم وتكلفك أكثر'
             : 'Our AI analyzes your engine continuously and flags issues before they become expensive.',
         icon: Icons.query_stats_rounded,
-        iconColor: const Color(0xFF7C3AED),
+        iconColor: kAccentColor,
         badge: 'AI',
       ),
       _PageData(

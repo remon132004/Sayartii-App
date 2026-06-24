@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sayartii/constants.dart';
@@ -17,9 +18,47 @@ class LiveData extends StatefulWidget {
 class _LiveDataState extends State<LiveData> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  Timer? _autoSwipeTimer;
+  bool _hasSwipedToMetrics = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = context.read<DataCubit>().state;
+      if (state is BlueData || state is WifiData) {
+        _startAutoSwipeTimer();
+      }
+    });
+  }
+
+  void _startAutoSwipeTimer() {
+    if (_hasSwipedToMetrics) return;
+    _autoSwipeTimer?.cancel();
+    _autoSwipeTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && _pageController.hasClients && _currentPage == 0) {
+        _pageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+        setState(() {
+          _hasSwipedToMetrics = true;
+        });
+      }
+    });
+  }
+
+  void _cancelAutoSwipeTimer() {
+    _autoSwipeTimer?.cancel();
+    _autoSwipeTimer = null;
+    _hasSwipedToMetrics = false;
+  }
 
   @override
   void dispose() {
+    _autoSwipeTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -43,50 +82,63 @@ class _LiveDataState extends State<LiveData> {
           ),
         ),
       ),
-      body: BlocBuilder<DataCubit, DataState>(builder: (context, state) {
-        final connected = state is BlueData || state is WifiData;
+      body: BlocConsumer<DataCubit, DataState>(
+        listener: (context, state) {
+          final connected = state is BlueData || state is WifiData;
+          if (connected) {
+            _startAutoSwipeTimer();
+          } else {
+            _cancelAutoSwipeTimer();
+            if (_currentPage != 0 && _pageController.hasClients) {
+              _pageController.jumpToPage(0);
+            }
+          }
+        },
+        builder: (context, state) {
+          final connected = state is BlueData || state is WifiData;
 
-        if (!connected) {
-          // ─── Not connected: show initial car screen ─────────────────
-          return _buildInitialScreen(context);
-        }
+          if (!connected) {
+            // ─── Not connected: show initial car screen ─────────────────
+            return _buildInitialScreen(context);
+          }
 
-        // ─── Connected: two-page swipe view ────────────────────────────
-        return Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                children: [
-                  _buildInitialConnectedScreen(context),
-                  _buildMetricsScreen(context, state),
-                ],
+          // ─── Connected: two-page swipe view ────────────────────────────
+          return Column(
+            children: [
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (i) => setState(() => _currentPage = i),
+                  children: [
+                    _buildInitialConnectedScreen(context),
+                    _buildMetricsScreen(context, state),
+                  ],
+                ),
               ),
-            ),
-            // ─── Page indicator dots ─────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20, top: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(2, (i) {
-                  final active = _currentPage == i;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: active ? 20 : 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: active ? kAccentColor : kBorderColor,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                  );
-                }),
+              // ─── Page indicator dots ─────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20, top: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(2, (i) {
+                    final active = _currentPage == i;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: active ? 20 : 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: active ? kAccentColor : kBorderColor,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                    );
+                  }),
+                ),
               ),
-            ),
-          ],
-        );
-      }),
+            ],
+          );
+        },
+      ),
     );
   }
 

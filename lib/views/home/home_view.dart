@@ -12,6 +12,7 @@ import 'package:sizer/sizer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../connect_device/connect_device_view.dart';
 import '../live_data_view.dart';
+import '../in_depth_check_view.dart';
 import 'cubit/data_cubit.dart';
 
 class HomeView extends StatefulWidget {
@@ -160,7 +161,8 @@ class _HomeViewState extends State<HomeView> {
                     _Action(
                       svg: 'assets/icons/in_depth.svg',
                       label: l.inDepthCheck,
-                      onTap: () {},
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const InDepthCheckView())),
                     ),
                     _VDivider(),
                     _Action(

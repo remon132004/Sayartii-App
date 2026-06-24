@@ -601,6 +601,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account created! Please log in.'**
   String get accountCreated;
+
+  /// No description provided for @nearbyMechanics.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby Mechanics'**
+  String get nearbyMechanics;
+
+  /// No description provided for @locationsNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} locations nearby'**
+  String locationsNearby(int count);
+
+  /// No description provided for @yourLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Location'**
+  String get yourLocation;
+
+  /// No description provided for @mechanic.
+  ///
+  /// In en, this message translates to:
+  /// **'Mechanic'**
+  String get mechanic;
+
+  /// No description provided for @partsStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Parts Store'**
+  String get partsStore;
+
+  /// No description provided for @viewOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'View on Map'**
+  String get viewOnMap;
+
+  /// No description provided for @gettingLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting your location…'**
+  String get gettingLocation;
+
+  /// No description provided for @locationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get your location. Make sure GPS is on.'**
+  String get locationError;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @mAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} m away'**
+  String mAway(int distance);
+
+  /// No description provided for @kmAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} km away'**
+  String kmAway(String distance);
+
+  /// No description provided for @verifiedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Location'**
+  String get verifiedLocation;
+
+  /// No description provided for @demoLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo Location'**
+  String get demoLocation;
+
+  /// No description provided for @searchThisArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Search this area'**
+  String get searchThisArea;
 }
 
 class _AppLocalizationsDelegate

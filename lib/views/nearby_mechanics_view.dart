@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sayartii/constants.dart';
 import 'package:sayartii/services/overpass_service.dart';
+import 'package:sayartii/l10n/app_localizations.dart';
 
 class NearbyMechanicsView extends StatefulWidget {
   const NearbyMechanicsView({super.key});
@@ -24,6 +25,9 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
 
   // Default center — Cairo
   LatLng _center = const LatLng(30.0444, 31.2357);
+
+  bool _showSearchThisArea = false;
+  LatLng? _customSearchCenter;
 
   @override
   void initState() {
@@ -90,10 +94,30 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
     if (!mounted) return;
     setState(() {
       _refreshingReal = false;
-      if (real != null && real.isNotEmpty) {
-        _places = real; // upgrade to real OSM data if available
+      if (real != null) {
+        _places = real; // use real OSM data, even if empty, so we don't show fake ones
       }
-      // if real == null or empty → keep the already-displayed mock data
+      // if real == null (API error) → keep the already-displayed mock data
+    });
+  }
+
+  Future<void> _searchCustomArea(LatLng center) async {
+    setState(() {
+      _showSearchThisArea = false;
+      _refreshingReal = true;
+    });
+
+    final real = await OverpassService.tryFetchReal(
+      lat: center.latitude,
+      lon: center.longitude,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _refreshingReal = false;
+      if (real != null) {
+        _places = real;
+      }
     });
   }
 
@@ -108,8 +132,11 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
 
   @override
   Widget build(BuildContext context) {
-    final mechanics   = _places.where((p) => p.type == PlaceType.mechanic).toList();
-    final partsStores = _places.where((p) => p.type == PlaceType.partsStore).toList();
+    final l = AppLocalizations.of(context)!;
+    // Strictly filter out any potential invalid coordinates before rendering
+    final safePlaces = _places.where((p) => p.lat.isFinite && p.lon.isFinite && !p.lat.isNaN && !p.lon.isNaN).toList();
+    final mechanics   = safePlaces.where((p) => p.type == PlaceType.mechanic).toList();
+    final partsStores = safePlaces.where((p) => p.type == PlaceType.partsStore).toList();
 
     return Scaffold(
       backgroundColor: kPrimaryBackGroundColor,
@@ -118,9 +145,9 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
         foregroundColor: kPrimaryDarkColor,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Nearby Mechanics',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        title: Text(
+          l.nearbyMechanics,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -143,7 +170,8 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
       body: Stack(
         children: [
           // ── Map (always rendered) ──────────────────────────────────────────
-          FlutterMap(
+          Positioned.fill(
+            child: FlutterMap(
             key: ValueKey(_center.latitude),
             mapController: _mapController,
             options: MapOptions(
@@ -151,6 +179,14 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
               initialZoom: _locating ? 5 : 14,
               maxZoom: 18,
               minZoom: 3,
+              onPositionChanged: (camera, hasGesture) {
+                if (hasGesture) {
+                  setState(() {
+                    _showSearchThisArea = true;
+                    _customSearchCenter = camera.center;
+                  });
+                }
+              },
             ),
             children: [
               TileLayer(
@@ -212,6 +248,48 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
                 ]),
             ],
           ),
+        ),
+
+          // ── Search this area button ─────────────────────────────────────────
+          if (_showSearchThisArea)
+            Positioned(
+              top: 14,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: GestureDetector(
+                  onTap: () => _searchCustomArea(_customSearchCenter ?? _mapController.camera.center),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: kAccentGradient,
+                      borderRadius: BorderRadius.circular(100),
+                      boxShadow: [
+                        BoxShadow(
+                          color: kAccentColor.withValues(alpha: 0.35),
+                          blurRadius: 12, offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.search_rounded, color: Colors.white, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          l.searchThisArea,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
           // ── Info badge ─────────────────────────────────────────────────────
           if (!_locating && _locationError == null)
@@ -237,7 +315,7 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
                         color: kAccentColor, size: 14),
                     const SizedBox(width: 5),
                     Text(
-                      '${_places.length} locations nearby',
+                      l.locationsNearby(_places.length),
                       style: const TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w700,
                         color: kPrimaryDarkColor,
@@ -269,11 +347,11 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _LegendRow(color: kAccentColor,            label: 'Your Location'),
+                    _LegendRow(color: kAccentColor,            label: l.yourLocation),
                     const SizedBox(height: 5),
-                    _LegendRow(color: const Color(0xFF16A34A), label: 'Mechanic'),
+                    _LegendRow(color: const Color(0xFF16A34A), label: l.mechanic),
                     const SizedBox(height: 5),
-                    _LegendRow(color: const Color(0xFF2563EB), label: 'Parts Store'),
+                    _LegendRow(color: const Color(0xFF2563EB), label: l.partsStore),
                   ],
                 ),
               ),
@@ -328,8 +406,8 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
                           color: Colors.white, size: 30),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Getting your location…',
-                        style: TextStyle(
+                    Text(l.gettingLocation,
+                        style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w600,
                           color: kPrimaryDarkColor,
                         )),
@@ -367,7 +445,7 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
                             color: kDangerColor, size: 32),
                       ),
                       const SizedBox(height: 16),
-                      Text(_locationError!,
+                      Text(_locationError == 'Location permission denied.' || _locationError == 'Could not get your location. Make sure GPS is on.' ? l.locationError : _locationError!,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 14, color: kSecondaryTextColor, height: 1.5,
@@ -376,8 +454,8 @@ class _NearbyMechanicsViewState extends State<NearbyMechanicsView> {
                       ElevatedButton.icon(
                         onPressed: _init,
                         icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Try Again',
-                            style: TextStyle(fontWeight: FontWeight.w700)),
+                        label: Text(l.tryAgain,
+                            style: const TextStyle(fontWeight: FontWeight.w700)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kAccentColor,
                           foregroundColor: Colors.white,
@@ -463,23 +541,25 @@ class _PlaceSheet extends StatelessWidget {
   final Position? userPosition;
   const _PlaceSheet({required this.place, required this.userPosition});
 
-  String _distance() {
+  String _distance(BuildContext context) {
     if (userPosition == null) return '';
+    final l = AppLocalizations.of(context)!;
     final meters = Geolocator.distanceBetween(
       userPosition!.latitude, userPosition!.longitude,
       place.lat, place.lon,
     );
-    if (meters < 1000) return '${meters.round()} m away';
-    return '${(meters / 1000).toStringAsFixed(1)} km away';
+    if (meters < 1000) return l.mAway(meters.round());
+    return l.kmAway((meters / 1000).toStringAsFixed(1));
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final isMechanic = place.type == PlaceType.mechanic;
     final color = isMechanic
         ? const Color(0xFF16A34A)
         : const Color(0xFF2563EB);
-    final dist = _distance();
+    final dist = _distance(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -529,20 +609,59 @@ class _PlaceSheet extends StatelessWidget {
                           color: kPrimaryDarkColor,
                         )),
                     const SizedBox(height: 3),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        isMechanic ? 'Mechanic' : 'Parts Store',
-                        style: TextStyle(
-                          color: color, fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Text(
+                            isMechanic ? l.mechanic : l.partsStore,
+                            style: TextStyle(
+                              color: color, fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: place.isMock 
+                                ? Colors.grey.withValues(alpha: 0.1)
+                                : kSuccessColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: place.isMock 
+                                  ? Colors.grey.withValues(alpha: 0.25)
+                                  : kSuccessColor.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                place.isMock ? Icons.info_outline_rounded : Icons.verified_rounded,
+                                color: place.isMock ? Colors.grey : kSuccessColor,
+                                size: 10,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                place.isMock ? l.demoLocation : l.verifiedLocation,
+                                style: TextStyle(
+                                  color: place.isMock ? Colors.grey : kSuccessColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -599,8 +718,8 @@ class _PlaceSheet extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.map_outlined, size: 18),
-                label: const Text('View on Map',
-                    style: TextStyle(
+                label: Text(l.viewOnMap,
+                    style: const TextStyle(
                         fontWeight: FontWeight.w700, fontSize: 15)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,

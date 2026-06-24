@@ -23,8 +23,18 @@ class _TroubleScanState extends State<TroubleScan> {
   Widget build(BuildContext context) {
     var troubleBloc = BlocProvider.of<TroubleScanCubit>(context);
 
-    return Scaffold(
-      backgroundColor: kPrimaryBackGroundColor,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        BlocProvider.of<BluetoothCubit>(context).send = true;
+        BlocProvider.of<BluetoothCubit>(context).sendParameterRequiest(paramJSON);
+        dtcCodes = [];
+        BlocProvider.of<TroubleScanCubit>(context).initialState();
+        Navigator.pop(context);
+      },
+      child: Scaffold(
+        backgroundColor: kPrimaryBackGroundColor,
       appBar: AppBar(
         backgroundColor: kSurface,
         elevation: 0,
@@ -45,6 +55,7 @@ class _TroubleScanState extends State<TroubleScan> {
           color: kPrimaryDarkColor,
           onPressed: () {
             BlocProvider.of<BluetoothCubit>(context).send = true;
+            BlocProvider.of<BluetoothCubit>(context).sendParameterRequiest(paramJSON);
             dtcCodes = [];
             BlocProvider.of<TroubleScanCubit>(context).initialState();
             Navigator.pop(context);
@@ -73,10 +84,10 @@ class _TroubleScanState extends State<TroubleScan> {
               builder: (context, state) {
                 Color outerColor = state is DtcResultPos
                     ? const Color(0xffFF5C00)
-                    : kPrimaryBlueColor;
+                    : kAccentDark;
                 Color inerColor = state is DtcResultPos
                     ? const Color(0xffFFD600)
-                    : const Color(0xff618bf8);
+                    : kAccentColor;
 
                 if (state is RequistDtc) {
                   BlocProvider.of<BluetoothCubit>(context).send = false;
@@ -192,6 +203,7 @@ class _TroubleScanState extends State<TroubleScan> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
