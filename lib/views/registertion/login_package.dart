@@ -5,7 +5,7 @@ import 'package:sayartii/views/nav_container.dart';
 import 'package:sayartii/views/registertion/storeToken.dart';
 import 'package:sayartii/views/registertion/apiData.dart';
 import 'package:sayartii/constants.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:sayartii/l10n/app_localizations.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
