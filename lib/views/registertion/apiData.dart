@@ -14,7 +14,7 @@ class ApiService {
     try {
       final response = await _dio.post(
         '$baseUrl/login',
-        data: {'email': username, 'password': password, 'rememberMe': rememberMe},
+        data: {'email': username.trim(), 'password': password, 'rememberMe': rememberMe},
       );
 
       // Save token securely if the login is successful
@@ -109,7 +109,7 @@ class ApiService {
       final response = await _dio.post(
         '$baseUrl/register',
         data: {
-          'email': email,
+          'email': email.trim(),
           'password': password,
           'confirmPassword': confirmPassword,
           'name': name,
