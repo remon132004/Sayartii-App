@@ -33,7 +33,7 @@ class _BluetoothState extends State<Bluetooth> {
           builder: (context, state) {
             return CustomButton(
               onPressed: () async {
-                await bloc.bluetoothButton();
+                await bloc.bluetoothButton(context.read<DataCubit>());
               },
               title: bloc.device != null ? l.disconnect : l.searchBluetooth,
               color: kPrimaryBlueColor,

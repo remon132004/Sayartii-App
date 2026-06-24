@@ -190,6 +190,8 @@ class _LiveDataState extends State<LiveData> {
 
   // ─── Screen 1 (connected) — car + "Reading..." ────────────────────────────
   Widget _buildInitialConnectedScreen(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
     return Column(
       children: [
         Expanded(
@@ -216,7 +218,7 @@ class _LiveDataState extends State<LiveData> {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Reading real-time live data...',
+                      l.readingLiveData,
                       style: TextStyle(
                         color: kAccentColor,
                         fontWeight: FontWeight.w600,
@@ -231,15 +233,18 @@ class _LiveDataState extends State<LiveData> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Swipe for sensor data',
+                      l.swipeForSensorData,
                       style: TextStyle(
                         color: kSubtleText,
                         fontSize: 10.sp,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(Icons.chevron_right_rounded,
-                        color: kSubtleText, size: 16),
+                    Icon(
+                      isRtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                      color: kSubtleText,
+                      size: 16,
+                    ),
                   ],
                 ),
               ],
@@ -253,76 +258,96 @@ class _LiveDataState extends State<LiveData> {
   // ─── Screen 2 — metrics + car side view ───────────────────────────────────
   Widget _buildMetricsScreen(BuildContext context, DataState state) {
     final l = AppLocalizations.of(context)!;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
     return Stack(
       children: [
-        // Car image on right (top-down / side view)
+        // Car image (mirrored and placed on left for RTL, right for LTR)
         Positioned(
-          right: -MediaQuery.of(context).size.width * 0.08,
+          left: isRtl ? -MediaQuery.of(context).size.width * 0.08 : null,
+          right: isRtl ? null : -MediaQuery.of(context).size.width * 0.08,
           top: 0,
           bottom: 0,
           child: Opacity(
             opacity: 0.92,
-            child: SvgPicture.asset(
-              'assets/images/live_data_car.svg',
-              height: MediaQuery.of(context).size.height,
-              fit: BoxFit.contain,
+            child: Transform.scale(
+              scaleX: isRtl ? -1.0 : 1.0,
+              child: SvgPicture.asset(
+                'assets/images/live_data_car.svg',
+                height: MediaQuery.of(context).size.height,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),
 
-        // Metrics list on left
+        // Metrics list
         Positioned.fill(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(28, 30, 20, 30),
+            padding: EdgeInsets.fromLTRB(
+              isRtl ? MediaQuery.of(context).size.width * 0.45 : 28,
+              30,
+              isRtl ? 28 : MediaQuery.of(context).size.width * 0.45,
+              30,
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: isRtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 _dataRow(context,
                     data: requistedData["speed"] ?? "0",
                     unit: "km/h",
                     icon: "assets/icons/live_data_current_speed.svg",
-                    name: l.currentSpeedLabel),
+                    name: l.currentSpeedLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["engineCoolantTemp"] ?? "0",
                     unit: "%",
                     icon: "assets/icons/live_data_coolant.svg",
-                    name: l.engineCoolantLabel),
+                    name: l.engineCoolantLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["engineRPM"] ?? "0",
                     unit: "rpm",
                     icon: "assets/icons/live_data_battery.svg",
-                    name: l.engineRpmLabel),
+                    name: l.engineRpmLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["engineCoolantTemp"] ?? "0",
                     unit: "°C",
                     icon: "assets/icons/live_data_temperature.svg",
-                    name: 'Coolant temp.'),
+                    name: l.engineCoolantLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["shortTermFuelBank1"] ?? "0",
                     unit: "%",
                     icon: "assets/icons/live_data_fuel.svg",
-                    name: l.fuelTrimLabel),
+                    name: l.fuelTrimLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["engineLoad"] ?? "0",
                     unit: "%",
                     icon: "assets/icons/live_data_load.svg",
-                    name: l.engineLoadLabel),
+                    name: l.engineLoadLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["airintakeTemp"] ?? "0",
                     unit: "°C",
                     icon: "assets/icons/live_data_temperature.svg",
-                    name: l.airIntakeLabel),
+                    name: l.airIntakeLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["throttlePosition"] ?? "0",
                     unit: "%",
                     icon: "assets/icons/live_data_baseline-speed.svg",
-                    name: l.throttleLabel),
+                    name: l.throttleLabel,
+                    isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["timingAdvance"] ?? "0",
                     unit: "kPa",
                     icon: "assets/icons/live_data_pressure.svg",
-                    name: l.timingAdvanceLabel),
+                    name: l.timingAdvanceLabel,
+                    isRtl: isRtl),
                 const SizedBox(height: 12),
                 // "Check more sensor data" link
                 GestureDetector(
@@ -330,8 +355,13 @@ class _LiveDataState extends State<LiveData> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (isRtl) ...[
+                        Icon(Icons.arrow_back_rounded,
+                            color: kAccentColor, size: 14),
+                        const SizedBox(width: 4),
+                      ],
                       Text(
-                        'Check more sensor data',
+                        l.checkMoreSensors,
                         style: TextStyle(
                           color: kAccentColor,
                           fontSize: 10.sp,
@@ -340,9 +370,11 @@ class _LiveDataState extends State<LiveData> {
                           decorationColor: kAccentColor,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_rounded,
-                          color: kAccentColor, size: 14),
+                      if (!isRtl) ...[
+                        const SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_rounded,
+                            color: kAccentColor, size: 14),
+                      ],
                     ],
                   ),
                 ),
@@ -355,11 +387,11 @@ class _LiveDataState extends State<LiveData> {
   }
 
   Widget _dataRow(BuildContext context,
-      {required data, required unit, required icon, required name}) {
+      {required data, required unit, required icon, required name, required bool isRtl}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 26),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: isRtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           RichText(
             text: TextSpan(children: [
@@ -384,19 +416,35 @@ class _LiveDataState extends State<LiveData> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SvgPicture.asset(icon,
-                  width: 13,
-                  height: 13,
-                  colorFilter:
-                      const ColorFilter.mode(kAccentColor, BlendMode.srcIn)),
-              const SizedBox(width: 5),
-              Text(
-                name,
-                style: TextStyle(
-                    color: kSecondaryTextColor,
-                    fontSize: 9.sp,
-                    fontWeight: FontWeight.w600),
-              ),
+              if (isRtl) ...[
+                Text(
+                  name,
+                  style: TextStyle(
+                      color: kSecondaryTextColor,
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 5),
+                SvgPicture.asset(icon,
+                    width: 13,
+                    height: 13,
+                    colorFilter:
+                        const ColorFilter.mode(kAccentColor, BlendMode.srcIn)),
+              ] else ...[
+                SvgPicture.asset(icon,
+                    width: 13,
+                    height: 13,
+                    colorFilter:
+                        const ColorFilter.mode(kAccentColor, BlendMode.srcIn)),
+                const SizedBox(width: 5),
+                Text(
+                  name,
+                  style: TextStyle(
+                      color: kSecondaryTextColor,
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+              ],
             ],
           ),
         ],

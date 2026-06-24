@@ -312,4 +312,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchThisArea => 'Search this area';
+
+  @override
+  String get checkMoreSensors => 'Check more sensor data';
+
+  @override
+  String get readingLiveData => 'Reading real-time live data...';
+
+  @override
+  String get swipeForSensorData => 'Swipe for sensor data';
 }

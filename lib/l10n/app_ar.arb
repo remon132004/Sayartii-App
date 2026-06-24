@@ -125,5 +125,8 @@
   },
   "verifiedLocation": "موقع موثق",
   "demoLocation": "موقع تجريبي",
-  "searchThisArea": "البحث في هذه المنطقة"
+  "searchThisArea": "البحث في هذه المنطقة",
+  "checkMoreSensors": "تحقق من المزيد من الحساسات",
+  "readingLiveData": "جاري قراءة الحساسات مباشرة...",
+  "swipeForSensorData": "اسحب لعرض بيانات الحساسات"
 }

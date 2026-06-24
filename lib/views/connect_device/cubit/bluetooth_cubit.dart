@@ -29,7 +29,7 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
   int count = 0;
   List<String> codes = [];
 
-  bluetoothButton() async {
+  bluetoothButton([DataCubit? dataCubit]) async {
     if (!buttonOn) {
       buttonOn = !buttonOn;
       obd2.permitions;
@@ -56,6 +56,7 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       send = false;
       obd2.disconnect();
       resetComputedMetrics();
+      dataCubit?.disconnect();
       emit(BluetoothOff());
     }
   }
@@ -87,6 +88,10 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       );
     }, (message) {
       debugPrint("error in connecting: $message");
+      buttonOn = false;
+      device = null;
+      send = false;
+      dataCubit.disconnect();
       emit(BluetoothError(message));
       emit(BluetoothOff());
     });

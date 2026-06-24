@@ -125,5 +125,8 @@
   },
   "verifiedLocation": "Verified Location",
   "demoLocation": "Demo Location",
-  "searchThisArea": "Search this area"
+  "searchThisArea": "Search this area",
+  "checkMoreSensors": "Check more sensor data",
+  "readingLiveData": "Reading real-time live data...",
+  "swipeForSensorData": "Swipe for sensor data"
 }

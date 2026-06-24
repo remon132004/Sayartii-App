@@ -312,4 +312,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get searchThisArea => 'البحث في هذه المنطقة';
+
+  @override
+  String get checkMoreSensors => 'تحقق من المزيد من الحساسات';
+
+  @override
+  String get readingLiveData => 'جاري قراءة الحساسات مباشرة...';
+
+  @override
+  String get swipeForSensorData => 'اسحب لعرض بيانات الحساسات';
 }

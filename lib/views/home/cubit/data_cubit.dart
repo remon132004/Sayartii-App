@@ -14,7 +14,11 @@ class DataCubit extends Cubit<DataState> {
 
   void updateDataBlue(String name, dynamic value) {
     requistedData[name] = value;
-
     emit(BlueData());
+  }
+
+  void disconnect() {
+    resetComputedMetrics();
+    emit(DataInitial());
   }
 }

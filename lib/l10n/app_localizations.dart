@@ -685,6 +685,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search this area'**
   String get searchThisArea;
+
+  /// No description provided for @checkMoreSensors.
+  ///
+  /// In en, this message translates to:
+  /// **'Check more sensor data'**
+  String get checkMoreSensors;
+
+  /// No description provided for @readingLiveData.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading real-time live data...'**
+  String get readingLiveData;
+
+  /// No description provided for @swipeForSensorData.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe for sensor data'**
+  String get swipeForSensorData;
 }
 
 class _AppLocalizationsDelegate

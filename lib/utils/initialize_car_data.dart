@@ -72,6 +72,15 @@ void resetComputedMetrics() {
   _totalDistanceKm = 0.0;
   _fuelAccumulator = 0.0;
   _distanceAccumulatorForFuel = 0.0;
+  requistedData['enginePower'] = '0';
+  requistedData['engineCoolantTemp'] = '0';
+  requistedData['engineLoad'] = '0';
+  requistedData['engineRPM'] = '0';
+  requistedData['airintakeTemp'] = '0';
+  requistedData['speed'] = '0';
+  requistedData['shortTermFuelBank1'] = '0';
+  requistedData['throttlePosition'] = '0';
+  requistedData['timingAdvance'] = '0';
   requistedData['mileage'] = '0';
   requistedData['avgFuel'] = '0';
 }
