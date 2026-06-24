@@ -5,6 +5,7 @@ import 'package:sayartii/views/nav_container.dart';
 import 'package:sayartii/views/registertion/storeToken.dart';
 import 'package:sayartii/views/registertion/apiData.dart';
 import 'package:sayartii/constants.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -62,10 +63,23 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return FlutterLogin(
       title: 'Sayartii',
       hideForgotPasswordButton: false, // فعلنا زر نسيان الباسورد ليعمل
       logo: const AssetImage('assets/images/signin.png'),
+      messages: LoginMessages(
+        userHint: l.emailAddress,
+        passwordHint: l.password,
+        confirmPasswordHint: l.password,
+        loginButton: l.loginBtn,
+        signupButton: l.createAccountBtn,
+        forgotPasswordButton: l.forgotPassword,
+        recoverPasswordButton: l.continueBtn,
+        recoverPasswordIntro: l.welcomeBack,
+        recoverPasswordDescription: l.createAccountSub,
+        goBackButton: l.backBtn,
+      ),
       theme: LoginTheme(
         primaryColor: kPrimaryBackGroundColor,
         accentColor: kAccentColor,
@@ -125,10 +139,10 @@ class LoginScreen extends StatelessWidget {
       loginAfterSignUp: true,
       onLogin: _authUser,
       onSignup: _signupUser,
-      additionalSignupFields: const [
-        UserFormField(keyName: 'Name', displayName: 'Full Name'),
-        UserFormField(keyName: 'Car Name', displayName: 'Vehicle Model'),
-        UserFormField(keyName: 'Car Year', displayName: 'Model Year'),
+      additionalSignupFields: [
+        UserFormField(keyName: 'Name', displayName: l.fullName),
+        UserFormField(keyName: 'Car Name', displayName: l.vehicleModel),
+        UserFormField(keyName: 'Car Year', displayName: l.modelYear),
       ],
       onSubmitAnimationCompleted: () {
         Helper.saveUserLoggedInSharedPreference(true);
