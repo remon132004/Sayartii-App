@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sayartii/constants.dart';
 
-class HomeContainer extends StatelessWidget {
+class HomeContainer extends StatefulWidget {
   const HomeContainer({
     super.key,
     required this.data,
@@ -14,12 +14,45 @@ class HomeContainer extends StatelessWidget {
   final IconData? icon;
 
   @override
+  State<HomeContainer> createState() => _HomeContainerState();
+}
+
+class _HomeContainerState extends State<HomeContainer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 300));
+    _fadeAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(HomeContainer old) {
+    super.didUpdateWidget(old);
+    if (old.data != widget.data && widget.data != '0' && widget.data.isNotEmpty) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [kSurface, kAccentSofter],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -37,46 +70,49 @@ class HomeContainer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Icon
-          if (icon != null) ...[
+          if (widget.icon != null) ...[
             Container(
               width: 34,
               height: 34,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: kAccentSoft,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: kAccentColor, size: 17),
+              child: Icon(widget.icon, color: kAccentColor, size: 17),
             ),
             const SizedBox(height: 10),
           ],
 
-          // Value + unit
-          RichText(
-            text: TextSpan(children: [
-              TextSpan(
-                text: data,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 24,
-                  color: kAccentColor,
-                  height: 1,
+          // Value + unit — animated on data change
+          FadeTransition(
+            opacity: _fadeAnim,
+            child: RichText(
+              text: TextSpan(children: [
+                TextSpan(
+                  text: widget.data,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 24,
+                    color: kAccentColor,
+                    height: 1,
+                  ),
                 ),
-              ),
-              TextSpan(
-                text: text1,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: kSubtleText,
-                  fontWeight: FontWeight.w500,
+                TextSpan(
+                  text: widget.text1,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: kSubtleText,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ]),
+              ]),
+            ),
           ),
 
           const SizedBox(height: 8),
 
           Text(
-            text2,
+            widget.text2,
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -87,7 +123,7 @@ class HomeContainer extends StatelessWidget {
           const SizedBox(height: 2),
 
           Text(
-            text3,
+            widget.text3,
             style: const TextStyle(
               fontSize: 10.5,
               color: kSubtleText,

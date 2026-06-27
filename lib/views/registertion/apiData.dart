@@ -85,15 +85,17 @@ class ApiService {
     await prefs.remove('user_name');
     await prefs.remove('user_email');
     await prefs.remove('user_car');
+    await prefs.remove('user_car_year');
   }
 
   // Get locally stored profile info
   static Future<Map<String, String?>> getProfile() async {
     final prefs = await SharedPreferences.getInstance();
     return {
-      'name': prefs.getString('user_name'),
-      'email': prefs.getString('user_email'),
-      'car': prefs.getString('user_car'),
+      'name':    prefs.getString('user_name'),
+      'email':   prefs.getString('user_email'),
+      'car':     prefs.getString('user_car'),
+      'carYear': prefs.getString('user_car_year'),
     };
   }
 
@@ -118,12 +120,14 @@ class ApiService {
         },
       );
       if (response.statusCode == 200) {
-        // Save the entered name & car locally for the profile display
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_name', name.trim());
         await prefs.setString('user_email', email.trim());
         if (carName.trim().isNotEmpty) {
           await prefs.setString('user_car', carName.trim());
+        }
+        if (carYear.trim().isNotEmpty) {
+          await prefs.setString('user_car_year', carYear.trim());
         }
       }
       return response;

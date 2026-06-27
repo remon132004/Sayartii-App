@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:sayartii/models/prediction_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_switch/flutter_switch.dart';
@@ -11,7 +12,6 @@ import 'package:sayartii/views/registertion/login_package.dart';
 import 'package:sayartii/views/registertion/apiData.dart';
 import 'package:sayartii/views/notification/local_notification.dart';
 import 'package:sayartii/utils/initialize_car_data.dart';
-import 'package:sayartii/cubit/language_cubit.dart';
 import 'connect_device/cubit/bluetooth_cubit.dart';
 
 class MyInfoView extends StatefulWidget {
@@ -25,6 +25,7 @@ class _MyInfoViewState extends State<MyInfoView> {
   String _name = '';
   String _email = '';
   String _car = '';
+  String _carYear = '';
 
   @override
   void initState() {
@@ -33,13 +34,45 @@ class _MyInfoViewState extends State<MyInfoView> {
   }
 
   Future<void> _loadProfile() async {
+    // ── Step 1: Show local cache instantly (no waiting) ──────────────────────
     final p = await ApiService.getProfile();
     if (mounted) {
       setState(() {
-        _name  = (p['name'] != null && p['name']!.trim().isNotEmpty) ? p['name']! : 'Sayartii User';
-        _email = (p['email'] != null && p['email']!.trim().isNotEmpty) ? p['email']! : '';
-        _car   = (p['car'] != null && p['car']!.trim().isNotEmpty) ? p['car']! : 'Mercedes C-Class';
+        _name    = (p['name']?.trim().isNotEmpty    == true) ? p['name']!    : 'Sayartii User';
+        _email   = (p['email']?.trim().isNotEmpty   == true) ? p['email']!   : '';
+        _car     = (p['car']?.trim().isNotEmpty     == true) ? p['car']!     : '';
+        _carYear = (p['carYear']?.trim().isNotEmpty == true) ? p['carYear']! : '';
       });
+    }
+
+    // ── Step 2: Refresh from server in background ─────────────────────────────
+    try {
+      final token = await ApiService.getToken();
+      if (token == null || !mounted) return;
+
+      final dio = Dio();
+      final response = await dio.get(
+        '$kBackendUrl/api/account/profile',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200 && response.data != null && mounted) {
+        final d = response.data as Map<String, dynamic>;
+        final serverName    = d['name']?.toString().trim()    ?? '';
+        final serverEmail   = d['email']?.toString().trim()   ?? '';
+        final serverCar     = d['carName']?.toString().trim() ?? '';
+
+        // Only update if server returned richer data
+        if (serverName.isNotEmpty || serverCar.isNotEmpty) {
+          setState(() {
+            if (serverName.isNotEmpty)  _name  = serverName;
+            if (serverEmail.isNotEmpty) _email = serverEmail;
+            if (serverCar.isNotEmpty)   _car   = serverCar;
+          });
+        }
+      }
+    } catch (_) {
+      // Server unavailable — local cache is already displayed, no action needed
     }
   }
 
@@ -121,11 +154,12 @@ class _MyInfoViewState extends State<MyInfoView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     if (_car.isNotEmpty) ...[
-                                      Text(_car,
-                                          style: const TextStyle(
-                                              color: kSecondaryTextColor,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600)),
+                                      Text(
+                                        _carYear.isNotEmpty ? '$_car  •  $_carYear' : _car,
+                                        style: const TextStyle(
+                                            color: kSecondaryTextColor,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600)),
                                       const SizedBox(width: 10),
                                     ],
                                     Container(
@@ -331,31 +365,6 @@ class _MyInfoViewState extends State<MyInfoView> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => _DemoModeSheet(scenarios: scenarios, isAr: isAr),
-    );
-  }
-
-  void _showAbout(BuildContext context, AppLocalizations l) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: kSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l.aboutUsTitle,
-            style: const TextStyle(
-                color: kPrimaryDarkColor, fontWeight: FontWeight.w800),
-            textAlign: TextAlign.right),
-        content: Text(l.aboutUsDesc,
-            style: const TextStyle(color: kSecondaryTextColor, height: 1.6),
-            textAlign: TextAlign.right),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l.backBtn,
-                style: const TextStyle(
-                    color: kAccentColor, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
     );
   }
 

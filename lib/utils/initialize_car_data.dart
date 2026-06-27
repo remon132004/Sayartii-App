@@ -173,3 +173,28 @@ String freezeFrameJSON = '''
 		    }
 		 ]
       ''';
+
+String configJSON = '''
+    [
+        {
+            "command": "AT Z",
+            "title": "Reset",
+            "description": "Reset OBD2"
+        },
+        {
+            "command": "ATE0",
+            "title": "Echo Off",
+            "description": "Turn off echo"
+        },
+        {
+            "command": "ATL0",
+            "title": "Linefeeds Off",
+            "description": "Turn off linefeeds"
+        },
+        {
+            "command": "ATSP0",
+            "title": "Auto Protocol",
+            "description": "Set protocol to auto"
+        }
+    ]
+''';

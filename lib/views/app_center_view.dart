@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sayartii/constants.dart';
-import 'package:sayartii/cubit/language_cubit.dart';
 import 'package:sayartii/l10n/app_localizations.dart';
 import 'package:sayartii/views/in_depth_check_view.dart';
 import 'package:sayartii/views/live_data_view.dart';

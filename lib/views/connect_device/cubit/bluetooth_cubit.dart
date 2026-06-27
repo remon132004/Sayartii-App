@@ -4,12 +4,15 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:sayartii/models/dtc_code_model.dart';
 import 'package:sayartii/models/prediction_model.dart';
 import 'package:sayartii/services/notification.dart';
 import 'package:sayartii/views/notification/local_notification.dart';
 import 'package:sayartii/services/prediction_sevice.dart';
+import 'package:sayartii/services/api/api.dart';
 import 'package:sayartii/utils/initialize_car_data.dart';
 import 'package:sayartii/views/home/cubit/data_cubit.dart';
+import 'package:sayartii/constants.dart';
 
 import '../../../services/bluetooth/obd2_plugin.dart';
 import '../../predicted_codes/cubit/predict_codes_cubit.dart';
@@ -28,6 +31,8 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
   bool predict = false;
   int count = 0;
   List<String> codes = [];
+  /// Stores DTC details fetched from the API for notification navigation
+  List<DtcCodeModel> lastDtcDetailsList = [];
 
   bluetoothButton([DataCubit? dataCubit]) async {
     if (!buttonOn) {
@@ -71,13 +76,25 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       await obd2.setOnDataReceived((command, response, requestCode) {
         debugPrint("==>> $command");
         if (command == "DTC") {
-          dtcCodes = json.decode(response);
-          //dtcCodes = ["P0111", "P0327"];
+          // CRITICAL FIX: Append new codes instead of overwriting.
+          // The 3 DTC commands (03, 07, 0A) each return separate responses.
+          // Overwriting would lose codes from earlier commands.
+          List<dynamic> newCodes = json.decode(response);
+          for (var code in newCodes) {
+            if (!dtcCodes.contains(code)) {
+              dtcCodes.add(code);
+            }
+          }
+          debugPrint('[DTC] Current dtcCodes after merge: $dtcCodes');
         }
         if (command == "PARAMETER") {
           updateData(response, dataCubit, predictCodesCubit);
         }
       });
+      // Initialize ELM327 device first
+      int initTime = await obd2.configObdWithJSON(configJSON);
+      await Future.delayed(Duration(milliseconds: initTime));
+      
       sendParameterRequiest(paramJSON);
       emit(BluetoothOn());
       // ─── Connection success notification ─────────────────────────────────
@@ -86,6 +103,9 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
         '🔗 OBD2 Connected',
         'Sayartii is now linked to $deviceName and reading live data.',
       );
+      // ─── AUTO DTC SCAN after successful connection ───────────────────────
+      // Automatically check for stored fault codes right after connecting
+      _autoScanDtc();
     }, (message) {
       debugPrint("error in connecting: $message");
       buttonOn = false;
@@ -95,6 +115,49 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       emit(BluetoothError(message));
       emit(BluetoothOff());
     });
+  }
+
+  /// Automatically scan for DTCs after a successful Bluetooth connection.
+  /// Clears old codes, sends the DTC request, waits, and fires a
+  /// notification + fetches details if any codes are found.
+  Future<void> _autoScanDtc() async {
+    try {
+      debugPrint('[AUTO-DTC] Starting automatic DTC scan...');
+      dtcCodes = []; // Clear stale codes from any previous session
+      send = false;  // Pause live-data polling while scanning
+      await sendDtcRequiest(dtcJSON);
+      send = true;   // Resume live-data polling
+      sendParameterRequiest(paramJSON);
+      debugPrint('[AUTO-DTC] Scan complete. dtcCodes=$dtcCodes');
+
+      if (dtcCodes.isNotEmpty) {
+        // Fetch details from AI API for each code
+        lastDtcDetailsList = [];
+        for (var code in dtcCodes) {
+          try {
+            Map<String, dynamic> detailsJson =
+                await Api().get(url: "$kAiUrl/dtc_code/$code");
+            lastDtcDetailsList.add(DtcCodeModel.fromJson(detailsJson));
+          } catch (e) {
+            debugPrint('[AUTO-DTC] Failed to fetch details for $code: $e');
+          }
+        }
+
+        // Fire a local notification with the DTC payload
+        showNotification(
+          '⚠️ أعطال مكتشفة!',
+          'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}. اضغط لعرض التفاصيل.',
+          payload: 'dtc_scan',
+        );
+      }
+    } catch (e) {
+      debugPrint('[AUTO-DTC] Error during auto scan: $e');
+      // Resume live-data even if scan fails
+      if (!send) {
+        send = true;
+        sendParameterRequiest(paramJSON);
+      }
+    }
   }
 
   Future<int> sendDtcRequiest(parameters) async {
@@ -111,9 +174,15 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
 
   sendParameterRequiest(parameters) async {
     while (send) {
-      await Future.delayed(
-          Duration(milliseconds: await obd2.getParamsFromJSON(parameters)),
-          () {});
+      try {
+        await Future.delayed(
+            Duration(milliseconds: await obd2.getParamsFromJSON(parameters)));
+      } catch (e) {
+        debugPrint('[OBD2] sendParameterRequiest error: $e');
+        // Brief pause before retrying to avoid busy-spinning on persistent errors
+        await Future.delayed(const Duration(seconds: 2));
+        if (!send) break;
+      }
     }
   }
 
@@ -125,6 +194,9 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       resp = data["response"]?.toString();
       if (resp == null || resp.isEmpty || resp == "null") {
         continue;
+      }
+      if (resp == "Err") {
+        resp = "0"; // Handle unsupported sensors gracefully
       }
       if (resp.contains('.')) {
         try {

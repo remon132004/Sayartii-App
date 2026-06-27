@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sayartii/constants.dart';
-import 'package:sayartii/cubit/language_cubit.dart';
 import 'package:sayartii/l10n/app_localizations.dart';
 import 'package:sayartii/services/notification.dart';
 import 'package:sayartii/utils/initialize_car_data.dart';
@@ -27,7 +26,16 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 60), (_) => predictNotification());
+    // Timer fires every 60s but predictNotification() internally
+    // skips if no car data is available (rpm == 0 && speed == 0).
+    // We additionally guard here by checking connection state.
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (!mounted) return;
+      final state = context.read<DataCubit>().state;
+      if (state is BlueData || state is WifiData) {
+        predictNotification();
+      }
+    });
   }
 
   @override
@@ -197,14 +205,16 @@ class _HomeViewState extends State<HomeView> {
               BlocBuilder<DataCubit, DataState>(
                 builder: (_, state) {
                   final ok = state is BlueData || state is WifiData;
+                  // '––' is shown when no car is connected — cleaner than fake '0'
+                  const dash = '––';
                   return Column(
                     children: [
                       Row(
                         children: [
                           Expanded(
                             child: HomeContainer(
-                              data: ok ? (requistedData['speed'] ?? '0') : '0',
-                              text1: ' km/h',
+                              data: ok ? (requistedData['speed'] ?? dash) : dash,
+                              text1: ok ? ' km/h' : '',
                               text2: l.currentSpeed,
                               text3: l.realTimeSpeed,
                               icon: Icons.speed_rounded,
@@ -213,8 +223,8 @@ class _HomeViewState extends State<HomeView> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: HomeContainer(
-                              data: ok ? (requistedData['engineRPM'] ?? '0') : '0',
-                              text1: ' rpm',
+                              data: ok ? (requistedData['engineRPM'] ?? dash) : dash,
+                              text1: ok ? ' rpm' : '',
                               text2: l.engineRpm,
                               text3: l.realTimeRpm,
                               icon: Icons.rotate_right_rounded,
@@ -227,8 +237,8 @@ class _HomeViewState extends State<HomeView> {
                         children: [
                           Expanded(
                             child: HomeContainer(
-                              data: ok ? (requistedData['mileage'] ?? '0') : '0',
-                              text1: ' Km',
+                              data: ok ? (requistedData['mileage'] ?? dash) : dash,
+                              text1: ok ? ' Km' : '',
                               text2: l.mileage,
                               text3: l.totalDistance,
                               icon: Icons.route_rounded,
@@ -237,8 +247,8 @@ class _HomeViewState extends State<HomeView> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: HomeContainer(
-                              data: ok ? (requistedData['avgFuel'] ?? '0') : '0',
-                              text1: ' L/100',
+                              data: ok ? (requistedData['avgFuel'] ?? dash) : dash,
+                              text1: ok ? ' L/100' : '',
                               text2: l.avgFuel,
                               text3: l.estimatedConsumption,
                               icon: Icons.local_gas_station_rounded,
@@ -251,6 +261,7 @@ class _HomeViewState extends State<HomeView> {
                 },
               ),
 
+
               const SizedBox(height: 28),
             ],
           ),
@@ -261,51 +272,6 @@ class _HomeViewState extends State<HomeView> {
 }
 
 // ─── Sub widgets ───────────────────────────────────────────────────────────────
-
-class _StatusChip extends StatelessWidget {
-  final bool connected;
-  final AppLocalizations l;
-  const _StatusChip({required this.connected, required this.l});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: connected
-            ? kSuccessColor.withValues(alpha: 0.08)
-            : kDividerColor,
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(
-          color: connected
-              ? kSuccessColor.withValues(alpha: 0.35)
-              : kBorderColor,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6, height: 6,
-            decoration: BoxDecoration(
-              color: connected ? kSuccessColor : kSubtleText,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            connected ? l.connected : l.disconnected,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: connected ? kSuccessColor : kSubtleText,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _Action extends StatelessWidget {
   final String svg;

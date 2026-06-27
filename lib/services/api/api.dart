@@ -2,59 +2,62 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+const _kTimeout = Duration(seconds: 15);
+
 class Api {
   Future<dynamic> get({required String url, String? token}) async {
-    http.Response response = await http.get(Uri.parse(url));
-
     Map<String, String> headers = {};
     if (token != null) {
-      headers.addAll({"Authorization": "Bearer $token"});
+      headers['Authorization'] = 'Bearer $token';
     }
+
+    final response = await http
+        .get(Uri.parse(url), headers: headers)
+        .timeout(_kTimeout);
+
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
       throw Exception(
-          "There is a problem with status code ${response.statusCode}");
+          'GET failed — status: ${response.statusCode}, url: $url');
     }
   }
 
   Future<dynamic> post(
       {required dynamic url, required dynamic body, String? token}) async {
-    Map<String, String> headers = {"Content-Type": "application/json"};
+    Map<String, String> headers = {'Content-Type': 'application/json'};
     if (token != null) {
-      headers.addAll({"Authorization": "Bearer $token"});
+      headers['Authorization'] = 'Bearer $token';
     }
 
-    http.Response response =
-        await http.post(Uri.parse(url), body: body, headers: headers);
-   
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(response.body);
+    final response = await http
+        .post(Uri.parse(url), body: body, headers: headers)
+        .timeout(_kTimeout);
 
-      return data;
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
     } else {
       throw Exception(
-          "there is a problem with status code ${response.statusCode} with body ${jsonDecode(response.body)}");
+          'POST failed — status: ${response.statusCode}, body: ${response.body}');
     }
   }
 
   Future<dynamic> put(
       {required dynamic url, required dynamic body, String? token}) async {
-    Map<String, String> headers = {};
-    headers.addAll({"Content-Type": "application/x-www-form-urlencoded"});
+    Map<String, String> headers = {'Content-Type': 'application/json'};
     if (token != null) {
-      headers.addAll({"Authorization": "Bearer $token"});
+      headers['Authorization'] = 'Bearer $token';
     }
 
-    http.Response response =
-        await http.post(Uri.parse(url), body: body, headers: headers);
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(response.body);
+    final response = await http
+        .put(Uri.parse(url), body: body, headers: headers)
+        .timeout(_kTimeout);
 
-      return data;
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
     } else {
       throw Exception(
-          "there is a problem with status code ${response.statusCode} with body ${jsonDecode(response.body)}");
+          'PUT failed — status: ${response.statusCode}, body: ${response.body}');
     }
   }
 }

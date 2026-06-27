@@ -66,9 +66,9 @@ class _LiveDataState extends State<LiveData> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEEF2FA),
+      backgroundColor: kPrimaryBackGroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEEF2FA),
+        backgroundColor: kPrimaryBackGroundColor,
         foregroundColor: kPrimaryDarkColor,
         elevation: 0,
         centerTitle: true,
@@ -111,7 +111,11 @@ class _LiveDataState extends State<LiveData> {
                   onPageChanged: (i) => setState(() => _currentPage = i),
                   children: [
                     _buildInitialConnectedScreen(context),
-                    _buildMetricsScreen(context, state),
+                    // Wrap metrics in its own BlocBuilder so it rebuilds on every data update
+                    BlocBuilder<DataCubit, DataState>(
+                      builder: (context, liveState) =>
+                          _buildMetricsScreen(context, liveState),
+                    ),
                   ],
                 ),
               ),
@@ -301,10 +305,10 @@ class _LiveDataState extends State<LiveData> {
                     name: l.currentSpeedLabel,
                     isRtl: isRtl),
                 _dataRow(context,
-                    data: requistedData["engineCoolantTemp"] ?? "0",
+                    data: requistedData["engineLoad"] ?? "0",
                     unit: "%",
-                    icon: "assets/icons/live_data_coolant.svg",
-                    name: l.engineCoolantLabel,
+                    icon: "assets/icons/live_data_load.svg",
+                    name: l.engineLoadLabel,
                     isRtl: isRtl),
                 _dataRow(context,
                     data: requistedData["engineRPM"] ?? "0",

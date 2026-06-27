@@ -151,14 +151,17 @@ Future<void> showBluetoothList(
                   borderRadius: BorderRadius.circular(2),
                 )),
             const SizedBox(height: 16),
-            const Text(
-              'Select Device',
-              style: TextStyle(
-                color: kPrimaryDarkColor,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
-            ),
+            Builder(builder: (ctx) {
+              final l = AppLocalizations.of(ctx);
+              return Text(
+                l?.searchBluetooth ?? 'Select Device',
+                style: const TextStyle(
+                  color: kPrimaryDarkColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              );
+            }),
             const SizedBox(height: 8),
             const Divider(color: kBorderColor),
             ConstrainedBox(

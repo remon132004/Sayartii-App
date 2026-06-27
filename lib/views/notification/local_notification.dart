@@ -3,6 +3,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:sayartii/constants.dart';
 import 'package:sayartii/views/predicted_codes/predicted_code_description.dart';
+import 'package:sayartii/views/trouble_scan/dtc_details.dart';
 
 
 late final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -26,34 +27,49 @@ Future<void> initializeNotifications() async{
     onDidReceiveNotificationResponse: (NotificationResponse response) async {
       if (response.payload != null && response.payload!.isNotEmpty) {
         selectNotificationSubject.add(response.payload!);
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (context) => const PredictedCodeDescription(),
-          ),
-        );
+        
+        if (response.payload == 'dtc_scan') {
+          // Navigate to DTC details screen when tapping DTC notification
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => const DtcDetailsScreen(),
+            ),
+          );
+        } else {
+          // Default: navigate to AI prediction details
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => const PredictedCodeDescription(),
+            ),
+          );
+        }
       }
     },
   );
 }
 
-Future<void> showNotification(String title, String body) async {
+int _notificationIdCounter = 0;
+
+Future<void> showNotification(String title, String body, {String? payload}) async {
   const AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(
-    'your_channel_id', 
-    'your_channel_name', 
-    channelDescription: 'your_channel_description', 
+    'sayartii_diagnostics', 
+    'Diagnostics Alerts', 
+    channelDescription: 'Notifications for vehicle diagnostic alerts and fault codes', 
     importance: Importance.max,
     priority: Priority.high,
     showWhen: true,
   );
   const NotificationDetails platformChannelSpecifics =
       NotificationDetails(android: androidPlatformChannelSpecifics);
+  // Use unique IDs so notifications don't overwrite each other
+  _notificationIdCounter++;
   await flutterLocalNotificationsPlugin.show(
-    0,
+    _notificationIdCounter,
     title,
     body,
     platformChannelSpecifics,
-    payload: 'item x',
+    payload: payload ?? 'item x',
   );
 }
 

@@ -250,15 +250,16 @@ class Obd2Plugin {
       configed = true;
       sendDTCToResponse = true;
     }
+    debugPrint('[DTC-CMD] Sending command: ${stm[lastIndex]["command"]} (index $lastIndex/${stm.length - 1})');
     _write(stm[lastIndex]["command"], requestCode);
 
     if (!configed) {
-      Future.delayed(const Duration(milliseconds: 1000), () {
+      Future.delayed(const Duration(milliseconds: 1500), () {
         getDTCFromJSON(stringJson, lastIndex: (lastIndex + 1));
       });
     }
 
-    return ((stm.length * 1000) + 150);
+    return ((stm.length * 1500) + 500);
   }
 
   /// This int value return needed time to config / please wait finish it
@@ -512,12 +513,15 @@ class Obd2Plugin {
 
   List<String> _getDtcsFrom(String value,
       {required String limit, required String command}) {
+    debugPrint('[DTC-PARSE] RAW input: "$value"');
+    debugPrint('[DTC-PARSE] limit: "$limit", command: "$command"');
     String result = "";
     List<String> dtcCodes = [];
     if (!value.contains(limit)) {
       List<String> dtcBytes = _calculateDtcFrames(command, value);
+      debugPrint('[DTC-PARSE] Parsed bytes (${dtcBytes.length}): $dtcBytes');
       if (dtcBytes.length < 6) {
-        // checkTheEndItem(context);
+        debugPrint('[DTC-PARSE] Not enough bytes for DTC decoding (need >= 6, got ${dtcBytes.length})');
       } else {
         for (int i = 0; i < dtcBytes.length; i += 3) {
           if (i >= dtcBytes.length) {
@@ -535,16 +539,21 @@ class Obd2Plugin {
             result += _initialDTC(binary.substring(4, 8));
             result += _initialDTC(binary.substring(8, 12));
             result += _initialDTC(binary.substring(12, binary.length));
+            debugPrint('[DTC-PARSE] Decoded code: $result from bytes [${dtcBytes[i]}, ${dtcBytes[i+1]}]');
             if (result != "P0000" && dtcCodes.contains(result) == false) {
               dtcCodes.add(result);
             }
           } on RangeError {
             // index range error - no problem
+            debugPrint('[DTC-PARSE] RangeError at index $i');
           }
           result = "";
         }
       }
+    } else {
+      debugPrint('[DTC-PARSE] Response contains limit "$limit" — no DTCs from this command');
     }
+    debugPrint('[DTC-PARSE] Final parsed codes: $dtcCodes');
     return dtcCodes;
   }
 

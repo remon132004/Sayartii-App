@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sayartii/constants.dart';
 import 'package:sayartii/services/api/api.dart';
 import 'package:sayartii/utils/initialize_car_data.dart';
+import 'package:sayartii/views/notification/local_notification.dart';
 
 import '../../../models/dtc_code_model.dart';
 
@@ -22,7 +23,7 @@ class TroubleScanCubit extends Cubit<TroubleScanState> {
     emit(RequistDtc());
 
     for (int i = 0; i < dtcCodes.length; i++) {
-      print(dtcCodes[i]);
+      debugPrint(dtcCodes[i]);
       Map<String, dynamic> detailsJson =
           await Api().get(url: "$kAiUrl/dtc_code/${dtcCodes[i]}");
       DtcCodeModel details = DtcCodeModel.fromJson(detailsJson);
@@ -35,6 +36,12 @@ class TroubleScanCubit extends Cubit<TroubleScanState> {
       emit(DtcResultNeg());
     } else {
       emit(DtcResultPos());
+      // Send notification when faults are found via manual scan
+      showNotification(
+        '⚠️ أعطال مكتشفة!',
+        'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}',
+        payload: 'dtc_scan',
+      );
     }
   }
 }

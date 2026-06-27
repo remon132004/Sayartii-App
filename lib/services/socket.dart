@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:sayartii/utils/initialize_car_data.dart';
 import 'dart:async';
-import '../views/home/cubit/data_cubit.dart'; // Import required for Completer
+import '../views/home/cubit/data_cubit.dart';
 
 String lastSentMessage = '';
 Socket? socket;
@@ -12,12 +13,12 @@ Future<Socket> connectToServer({required String ip, required int port}) async {
     ConnectionTask<Socket> socketConnectionTask =
         await Socket.startConnect(ip, port);
     socket = await socketConnectionTask.socket;
-    print(
+    debugPrint(
         'Connected to: ${socket!.remoteAddress.address}:${socket!.remotePort}');
   } on SocketException catch (e) {
-    print('SocketException: $e');
+    debugPrint('SocketException: $e');
   } catch (e) {
-    print('General exception: $e');
+    debugPrint('General exception: $e');
   }
   return socket!;
 }
@@ -64,7 +65,7 @@ String parseObdValue(String pid, String hexValue) {
         return ((bytes[0] - 128) * 0.5).toStringAsFixed(1);
     }
   } catch (e) {
-    print('Error parsing PID $pid value $hexValue: $e');
+    debugPrint('Error parsing PID $pid value $hexValue: $e');
   }
 
   return '0';
@@ -74,32 +75,25 @@ Future<void> reciveData(DataCubit dataCubit) async {
   socket!.listen(
     (Uint8List data) {
       final serverResponse = String.fromCharCodes(data);
-      // Split the response into lines
       List<String> lines = serverResponse.split('\n');
 
-      // Iterate over each line
       for (String line in lines) {
-        // Remove spaces for consistent parsing
         String cleanLine = line.replaceAll(' ', '').trim();
 
-        // Check if the line is a response to a current data request
         if (cleanLine.length >= 6 && (cleanLine.startsWith('41') || cleanLine.startsWith('43'))) {
-          // 410D3C... -> 41 (mode), 0D (pid), 3C... (value)
           String pid = cleanLine.substring(2, 4);
           String rawValue = cleanLine.substring(4);
           String parsedValue = parseObdValue(pid, rawValue);
-          
-          // Update the latest data
           dataCubit.updateDataWifi(mapPidToName(pid), parsedValue);
         }
       }
     },
     onError: (error) {
-      print(error);
+      debugPrint('Socket error: $error');
       socket!.destroy();
     },
     onDone: () {
-      print('Server left.');
+      debugPrint('Server disconnected.');
       socket!.destroy();
     },
   );
@@ -111,17 +105,15 @@ Future<void> sendMessage(Socket socket) async {
     while (true) {
       for (var key in requistData.keys) {
         String message = requistData[key] + '\r\n\r\n';
-        print(key);
-        print('Client: $message');
+        debugPrint('[WiFi OBD2] Sending: $key');
         socket.write(message);
-        // lastSentMessage = message; // Update the last sent message
         await Future.delayed(const Duration(seconds: 1));
       }
     }
   } on SocketException catch (e) {
-    print('SocketException in sendMessage: $e');
+    debugPrint('SocketException in sendMessage: $e');
   } catch (e) {
-    print('General exception in sendMessage: $e');
+    debugPrint('General exception in sendMessage: $e');
   }
 }
 
@@ -147,9 +139,5 @@ String mapPidToName(pid) {
       return 'timingAdvance';
   }
 
-  return "";
+  return '';
 }
-
-// void main() {
-//   connectToServer(ip: "192.168.1.6", port: 35000);
-// }

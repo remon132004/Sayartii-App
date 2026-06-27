@@ -59,6 +59,7 @@ Future<void> predictNotification() async {
         showNotification(
           'Issue Detected 🚗',
           'Your car may have a problem: $troubleCode. Open Sayartii for details.',
+          payload: 'prediction',
         );
       }
     } else {
