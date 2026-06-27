@@ -133,20 +133,25 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       if (dtcCodes.isNotEmpty) {
         // Fetch details from AI API for each code
         lastDtcDetailsList = [];
+        final isArLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
         for (var code in dtcCodes) {
           try {
             Map<String, dynamic> detailsJson =
                 await Api().get(url: "$kAiUrl/dtc_code/$code");
-            lastDtcDetailsList.add(DtcCodeModel.fromJson(detailsJson));
+            lastDtcDetailsList.add(DtcCodeModel.fromJson(detailsJson, isAr: isArLocale));
           } catch (e) {
             debugPrint('[AUTO-DTC] Failed to fetch details for $code: $e');
           }
         }
 
         // Fire a local notification with the DTC payload
+        // Use system locale for notification language
+        final isAr = WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
         showNotification(
-          '⚠️ أعطال مكتشفة!',
-          'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}. اضغط لعرض التفاصيل.',
+          isAr ? '⚠️ أعطال مكتشفة!' : '⚠️ Faults Detected!',
+          isAr
+            ? 'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}. اضغط لعرض التفاصيل.'
+            : '${dtcCodes.length} fault(s) detected: ${dtcCodes.join(", ")}. Tap to view details.',
           payload: 'dtc_scan',
         );
       }

@@ -165,11 +165,13 @@ class _InDepthCheckViewState extends State<InDepthCheckView> {
           module.statusColor = kDangerColor;
           
           // Fetch details for each new code
+          // Capture locale before async gap
+          final isArLocale = mounted ? Localizations.localeOf(context).languageCode == 'ar' : false;
           for (var code in newCodes) {
             try {
               Map<String, dynamic> detailsJson = 
                   await Api().get(url: "$kAiUrl/dtc_code/$code");
-              _foundFaults.add(DtcCodeModel.fromJson(detailsJson));
+              _foundFaults.add(DtcCodeModel.fromJson(detailsJson, isAr: isArLocale));
             } catch (e) {
               debugPrint('[IN-DEPTH] Failed to fetch details for $code: $e');
             }
@@ -199,9 +201,12 @@ class _InDepthCheckViewState extends State<InDepthCheckView> {
       
       // Send notification with results
       if (_hasFaults) {
+        final isAr = Localizations.localeOf(context).languageCode == 'ar';
         showNotification(
-          '⚠️ الفحص الشامل: أعطال مكتشفة!',
-          'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}',
+          isAr ? '⚠️ الفحص الشامل: أعطال مكتشفة!' : '⚠️ Deep Scan: Faults Detected!',
+          isAr
+            ? 'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}'
+            : '${dtcCodes.length} fault(s) found: ${dtcCodes.join(", ")}',
           payload: 'dtc_scan',
         );
       }

@@ -161,8 +161,12 @@ class _PredictedCodesState extends State<PredictedCodes> {
             final conf = predictedCodesList?.confidencePercent ?? '';
             final hrs  = predictedCodesList?.estimatedTimeRemaining;
             final subtitle = [
-              if (conf.isNotEmpty) '🎯 $conf confidence',
-              if (hrs != null && hrs > 0) '⏱ ${hrs.toStringAsFixed(1)} hrs to failure',
+              if (conf.isNotEmpty)
+                isAr ? '🎯 ثقة: $conf' : '🎯 $conf confidence',
+              if (hrs != null && hrs > 0)
+                isAr
+                    ? '⏱ ${hrs.toStringAsFixed(1)} ساعة للفشل'
+                    : '⏱ ${hrs.toStringAsFixed(1)} hrs to failure',
             ].join('  ·  ');
 
             return ListView.builder(

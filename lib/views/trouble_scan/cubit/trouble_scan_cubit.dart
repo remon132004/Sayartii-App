@@ -22,15 +22,17 @@ class TroubleScanCubit extends Cubit<TroubleScanState> {
   buttonPressed() async {
     emit(RequistDtc());
 
+    // Detect system locale once for this scan session
+    final isAr = WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
+
     for (int i = 0; i < dtcCodes.length; i++) {
       debugPrint(dtcCodes[i]);
       Map<String, dynamic> detailsJson =
           await Api().get(url: "$kAiUrl/dtc_code/${dtcCodes[i]}");
-      DtcCodeModel details = DtcCodeModel.fromJson(detailsJson);
-      // await Api().get(url: "$kAiUrl/dtc_code/$code");
+      DtcCodeModel details = DtcCodeModel.fromJson(detailsJson, isAr: isAr);
       dtcDetailsList.add(details);
     }
-    await Future.delayed(Duration(milliseconds: 1500));
+    await Future.delayed(const Duration(milliseconds: 1500));
 
     if (dtcCodes.isEmpty) {
       emit(DtcResultNeg());
@@ -38,8 +40,10 @@ class TroubleScanCubit extends Cubit<TroubleScanState> {
       emit(DtcResultPos());
       // Send notification when faults are found via manual scan
       showNotification(
-        '⚠️ أعطال مكتشفة!',
-        'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}',
+        isAr ? '⚠️ أعطال مكتشفة!' : '⚠️ Faults Detected!',
+        isAr
+          ? 'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}'
+          : '${dtcCodes.length} fault(s) found: ${dtcCodes.join(", ")}',
         payload: 'dtc_scan',
       );
     }
