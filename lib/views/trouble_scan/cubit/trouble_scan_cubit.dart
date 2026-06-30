@@ -19,20 +19,30 @@ class TroubleScanCubit extends Cubit<TroubleScanState> {
     }
   }
 
-  buttonPressed() async {
+  buttonPressed({bool isAr = false}) async {
     emit(RequistDtc());
-
-    // Detect system locale once for this scan session
-    final isAr = WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
+    dtcDetailsList.clear();
 
     for (int i = 0; i < dtcCodes.length; i++) {
       debugPrint(dtcCodes[i]);
-      Map<String, dynamic> detailsJson =
-          await Api().get(url: "$kAiUrl/dtc_code/${dtcCodes[i]}");
-      DtcCodeModel details = DtcCodeModel.fromJson(detailsJson, isAr: isAr);
-      dtcDetailsList.add(details);
+      try {
+        Map<String, dynamic> detailsJson =
+            await Api().get(url: "$kAiUrl/dtc_code/${dtcCodes[i]}");
+        DtcCodeModel details = DtcCodeModel.fromJson(detailsJson, isAr: isAr);
+        dtcDetailsList.add(details);
+      } catch (e) {
+        debugPrint('[MANUAL-DTC] Failed to fetch details for ${dtcCodes[i]}: $e');
+        dtcDetailsList.add(DtcCodeModel(
+          dtcCode: dtcCodes[i],
+          criticalLevel: "Medium",
+          description: isAr ? "غير قادر على جلب الوصف (فشل الاتصال بالسيرفر)" : "Unable to fetch description (Server Error)",
+        ));
+      }
     }
     await Future.delayed(const Duration(milliseconds: 1500));
+
+    // Sync to global cache so notification tap can access without BlocProvider
+    lastDtcDetails = List.from(dtcDetailsList);
 
     if (dtcCodes.isEmpty) {
       emit(DtcResultNeg());

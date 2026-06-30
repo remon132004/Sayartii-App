@@ -6,6 +6,7 @@ import 'package:sayartii/views/trouble_scan/code_description.dart';
 import 'package:sayartii/views/trouble_scan/cubit/trouble_scan_cubit.dart';
 import 'package:sizer/sizer.dart';
 import '../../models/dtc_code_model.dart';
+import '../../utils/initialize_car_data.dart';
 import '../../widgets/dtc_card.dart';
 
 class DtcDetailsScreen extends StatefulWidget {
@@ -18,13 +19,19 @@ class DtcDetailsScreen extends StatefulWidget {
 class _DtcDetailsScreenState extends State<DtcDetailsScreen> {
   @override
   Widget build(BuildContext context) {
-    // Try TroubleScanCubit first (manual scan), fall back to BluetoothCubit (auto-scan / notification)
+    // Priority 1: Manual scan results (user pressed the scan button)
     List<DtcCodeModel> dtcDetailsList =
         BlocProvider.of<TroubleScanCubit>(context).dtcDetailsList;
-    
-    // If the manual scan list is empty, use the auto-scan results from BluetoothCubit
+
+    // Priority 2: Auto-scan results stored in BluetoothCubit
     if (dtcDetailsList.isEmpty) {
       dtcDetailsList = BlocProvider.of<BluetoothCubit>(context).lastDtcDetailsList;
+    }
+
+    // Priority 3: Global cache — used when navigating from notification tap
+    // (no BlocProvider context available in that flow)
+    if (dtcDetailsList.isEmpty) {
+      dtcDetailsList = lastDtcDetails;
     }
 
     final isAr = Localizations.localeOf(context).languageCode == 'ar';

@@ -212,9 +212,9 @@ class _MyInfoViewState extends State<MyInfoView> {
                                 setState(() => _predict = v);
                                 BlocProvider.of<BluetoothCubit>(context).predict = v;
                                 if (v) {
-                                  showNotification('Smart Prediction', l.localeName == 'ar' ? 'تم تفعيل التنبؤ الذكي بنجاح' : 'Smart Prediction Enabled Successfully');
+                                  showNotification(l.localeName == 'ar' ? 'التنبؤ الذكي' : 'Smart Prediction', l.localeName == 'ar' ? 'تم تفعيل التنبؤ الذكي بنجاح' : 'Smart Prediction Enabled Successfully');
                                 } else {
-                                  showNotification('Smart Prediction', l.localeName == 'ar' ? 'تم إيقاف التنبؤ الذكي' : 'Smart Prediction Disabled');
+                                  showNotification(l.localeName == 'ar' ? 'التنبؤ الذكي' : 'Smart Prediction', l.localeName == 'ar' ? 'تم إيقاف التنبؤ الذكي' : 'Smart Prediction Disabled');
                                 }
                               },
                             ),

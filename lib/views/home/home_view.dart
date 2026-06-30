@@ -21,26 +21,13 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  Timer? _timer;
-
   @override
   void initState() {
     super.initState();
-    // Timer fires every 60s but predictNotification() internally
-    // skips if no car data is available (rpm == 0 && speed == 0).
-    // We additionally guard here by checking connection state.
-    _timer = Timer.periodic(const Duration(seconds: 60), (_) {
-      if (!mounted) return;
-      final state = context.read<DataCubit>().state;
-      if (state is BlueData || state is WifiData) {
-        predictNotification();
-      }
-    });
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     super.dispose();
   }
 

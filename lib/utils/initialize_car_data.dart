@@ -1,3 +1,4 @@
+import '../models/dtc_code_model.dart';
 import '../models/prediction_model.dart';
 
 Map<String, dynamic> requistData = {
@@ -17,6 +18,10 @@ Map<String, dynamic> requistData = {
 };
 PredictionModel? predictedCodesList;
 List<dynamic> dtcCodes = [];
+/// Global cache of DTC details fetched from the API.
+/// Updated by both auto-scan (BluetoothCubit) and manual scan (TroubleScanCubit).
+/// Accessed by the notification tap handler which has no BlocProvider context.
+List<DtcCodeModel> lastDtcDetails = [];
 
 Map<String, dynamic> requistedData = {
   "enginePower": "0",
@@ -190,6 +195,16 @@ String configJSON = '''
             "command": "ATL0",
             "title": "Linefeeds Off",
             "description": "Turn off linefeeds"
+        },
+        {
+            "command": "ATH0",
+            "title": "Headers Off",
+            "description": "Hide CAN headers — cleaner responses"
+        },
+        {
+            "command": "ATAT1",
+            "title": "Adaptive Timing",
+            "description": "Use adaptive timing for faster responses"
         },
         {
             "command": "ATSP0",

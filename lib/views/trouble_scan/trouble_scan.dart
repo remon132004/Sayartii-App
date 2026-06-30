@@ -89,15 +89,8 @@ class _TroubleScanState extends State<TroubleScan> {
                     ? const Color(0xffFFD600)
                     : kAccentColor;
 
-                if (state is RequistDtc) {
-                  BlocProvider.of<BluetoothCubit>(context).send = false;
-                } else {
-                  if (BlocProvider.of<BluetoothCubit>(context).send == false) {
-                    BlocProvider.of<BluetoothCubit>(context).send = true;
-                    BlocProvider.of<BluetoothCubit>(context)
-                        .sendParameterRequiest(paramJSON);
-                  }
-                }
+                // Live data loop pause/resume is handled in onTap, BackButton, and PopScope handlers
+                // to avoid mutating state or launching background loops during the build phase.
 
                 return CustomRecButton(
                   onTap: () {
@@ -124,9 +117,21 @@ class _TroubleScanState extends State<TroubleScan> {
                           MaterialPageRoute(
                               builder: (context) => const DtcDetailsScreen()));
                     } else {
-                      BlocProvider.of<BluetoothCubit>(context)
-                          .sendDtcRequiest(dtcJSON)
-                          .then((value) => troubleBloc.buttonPressed());
+                      final btCubit = BlocProvider.of<BluetoothCubit>(context);
+                      btCubit.send = false;
+                      dtcCodes = []; // Clear before new scan
+
+                      Future.delayed(const Duration(milliseconds: 2000), () async {
+                        // Send all 3 DTC commands (mode 03, 07, 0A)
+                        await btCubit.sendDtcRequiest(dtcJSON);
+                        // Extra wait for OBD2 response callbacks to populate dtcCodes
+                        await Future.delayed(const Duration(milliseconds: 3000));
+                        final isAr = AppLocalizations.of(context)!.localeName == 'ar';
+                        troubleBloc.buttonPressed(isAr: isAr);
+                        // Resume live data
+                        btCubit.send = true;
+                        btCubit.sendParameterRequiest(paramJSON);
+                      });
                     }
                   },
                   outerColor: outerColor,

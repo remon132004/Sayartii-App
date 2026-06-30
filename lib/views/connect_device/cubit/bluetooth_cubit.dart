@@ -31,8 +31,11 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
   bool predict = false;
   int count = 0;
   List<String> codes = [];
+  /// Stores the app locale (set at connection time) for notification language
+  bool _isAr = false;
   /// Stores DTC details fetched from the API for notification navigation
   List<DtcCodeModel> lastDtcDetailsList = [];
+  bool _isPollingParameters = false;
 
   bluetoothButton([DataCubit? dataCubit]) async {
     if (!buttonOn) {
@@ -67,7 +70,11 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
   }
 
   connectToDevice(int index, DataCubit dataCubit,
-      PredictCodesCubit predictCodesCubit) async {
+      PredictCodesCubit predictCodesCubit, bool isAr) async {
+    _isAr = isAr;
+    // ✅ CRITICAL: Reset all state flags so reconnects start cleanly
+    send = true;
+    _isPollingParameters = false;
     emit(BluetoothConnecting());
     debugPrint("##########${obd2.connection?.isConnected.toString()}#########");
     await obd2.getConnection(devices[index], (connection) async {
@@ -81,8 +88,9 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
           // Overwriting would lose codes from earlier commands.
           List<dynamic> newCodes = json.decode(response);
           for (var code in newCodes) {
-            if (!dtcCodes.contains(code)) {
-              dtcCodes.add(code);
+            String cleanCode = code.toString().trim().toUpperCase();
+            if (cleanCode.isNotEmpty && cleanCode != "P0000" && !dtcCodes.contains(cleanCode)) {
+              dtcCodes.add(cleanCode);
             }
           }
           debugPrint('[DTC] Current dtcCodes after merge: $dtcCodes');
@@ -95,17 +103,23 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       int initTime = await obd2.configObdWithJSON(configJSON);
       await Future.delayed(Duration(milliseconds: initTime));
       
-      sendParameterRequiest(paramJSON);
+      // Emit BluetoothOn state for device connection status card
       emit(BluetoothOn());
+
+      // Update DataCubit immediately so UI knows we are connected and transitions from "Please connect"
+      dataCubit.updateDataBlue('speed', '0');
+
       // ─── Connection success notification ─────────────────────────────────
       final deviceName = devices[index].name ?? 'OBD2 Device';
       showNotification(
-        '🔗 OBD2 Connected',
-        'Sayartii is now linked to $deviceName and reading live data.',
+        isAr ? '🔗 متصل بـ OBD2' : '🔗 OBD2 Connected',
+        isAr 
+          ? 'سيارتي متصل الآن بـ $deviceName ويقرأ البيانات الحية.' 
+          : 'Sayartii is now linked to $deviceName and reading live data.',
       );
       // ─── AUTO DTC SCAN after successful connection ───────────────────────
       // Automatically check for stored fault codes right after connecting
-      _autoScanDtc();
+      _autoScanDtc(isAr);
     }, (message) {
       debugPrint("error in connecting: $message");
       buttonOn = false;
@@ -118,50 +132,67 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
   }
 
   /// Automatically scan for DTCs after a successful Bluetooth connection.
-  /// Clears old codes, sends the DTC request, waits, and fires a
-  /// notification + fetches details if any codes are found.
-  Future<void> _autoScanDtc() async {
+  /// Fires notification and fetches AI details before restarting live data.
+  Future<void> _autoScanDtc(bool isAr) async {
     try {
       debugPrint('[AUTO-DTC] Starting automatic DTC scan...');
-      dtcCodes = []; // Clear stale codes from any previous session
-      send = false;  // Pause live-data polling while scanning
+      dtcCodes = [];
+      send = false;
+
+      // Wait for any in-flight polling loop to fully exit before scanning.
+      // Without this, the _isPollingParameters guard would block the restart call.
+      int waited = 0;
+      while (_isPollingParameters && waited < 3000) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        waited += 100;
+      }
+
+      // Small delay to let connection settle before scanning
+      await Future.delayed(const Duration(milliseconds: 500));
       await sendDtcRequiest(dtcJSON);
-      send = true;   // Resume live-data polling
-      sendParameterRequiest(paramJSON);
+
+      // Extra wait: ensure all OBD2 response callbacks populate dtcCodes
+      await Future.delayed(const Duration(milliseconds: 2000));
+
       debugPrint('[AUTO-DTC] Scan complete. dtcCodes=$dtcCodes');
 
       if (dtcCodes.isNotEmpty) {
-        // Fetch details from AI API for each code
         lastDtcDetailsList = [];
-        final isArLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
         for (var code in dtcCodes) {
           try {
             Map<String, dynamic> detailsJson =
                 await Api().get(url: "$kAiUrl/dtc_code/$code");
-            lastDtcDetailsList.add(DtcCodeModel.fromJson(detailsJson, isAr: isArLocale));
+            lastDtcDetailsList.add(DtcCodeModel.fromJson(detailsJson, isAr: isAr));
           } catch (e) {
             debugPrint('[AUTO-DTC] Failed to fetch details for $code: $e');
+            lastDtcDetailsList.add(DtcCodeModel(
+              dtcCode: code,
+              criticalLevel: "Medium",
+              description: isAr
+                  ? "غير قادر على جلب الوصف — تحقق من الاتصال بالإنترنت"
+                  : "Unable to fetch description — check internet connection",
+            ));
           }
         }
 
-        // Fire a local notification with the DTC payload
-        // Use system locale for notification language
-        final isAr = WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
+        lastDtcDetails = List.from(lastDtcDetailsList);
+
         showNotification(
           isAr ? '⚠️ أعطال مكتشفة!' : '⚠️ Faults Detected!',
           isAr
-            ? 'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}. اضغط لعرض التفاصيل.'
-            : '${dtcCodes.length} fault(s) detected: ${dtcCodes.join(", ")}. Tap to view details.',
+              ? 'تم اكتشاف ${dtcCodes.length} عطل: ${dtcCodes.join(", ")}. اضغط لعرض التفاصيل.'
+              : '${dtcCodes.length} fault(s) detected: ${dtcCodes.join(", ")}. Tap to view details.',
           payload: 'dtc_scan',
         );
       }
     } catch (e) {
       debugPrint('[AUTO-DTC] Error during auto scan: $e');
-      // Resume live-data even if scan fails
-      if (!send) {
-        send = true;
-        sendParameterRequiest(paramJSON);
-      }
+    } finally {
+      // Always restart live data — whether scan succeeded or failed.
+      // _isPollingParameters is guaranteed false here since we waited above.
+      send = true;
+      sendParameterRequiest(paramJSON);
+      debugPrint('[AUTO-DTC] Live data polling restarted.');
     }
   }
 
@@ -178,16 +209,26 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
   }
 
   sendParameterRequiest(parameters) async {
-    while (send) {
-      try {
-        await Future.delayed(
-            Duration(milliseconds: await obd2.getParamsFromJSON(parameters)));
-      } catch (e) {
-        debugPrint('[OBD2] sendParameterRequiest error: $e');
-        // Brief pause before retrying to avoid busy-spinning on persistent errors
-        await Future.delayed(const Duration(seconds: 2));
-        if (!send) break;
+    if (_isPollingParameters) {
+      debugPrint('[OBD2] Parameter polling is already running. Skipping duplicate call.');
+      return;
+    }
+    _isPollingParameters = true;
+    try {
+      while (send) {
+        try {
+          await Future.delayed(
+              Duration(milliseconds: await obd2.getParamsFromJSON(parameters)));
+        } catch (e) {
+          debugPrint('[OBD2] sendParameterRequiest error: $e');
+          // Brief pause before retrying to avoid busy-spinning on persistent errors
+          await Future.delayed(const Duration(seconds: 2));
+          if (!send) break;
+        }
       }
+    } finally {
+      _isPollingParameters = false;
+      debugPrint('[OBD2] Parameter polling loop exited.');
     }
   }
 
@@ -195,26 +236,38 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
       PredictCodesCubit predictCodesCubit) async {
     List<dynamic> responseData = json.decode(response);
     String? resp;
+    bool gotValidData = false;
     for (var data in responseData) {
       resp = data["response"]?.toString();
       if (resp == null || resp.isEmpty || resp == "null") {
         continue;
       }
-      if (resp == "Err") {
-        resp = "0"; // Handle unsupported sensors gracefully
+      if (resp == "Err" || resp == "NODATA" || resp == "?") {
+        // Sensor not supported by this vehicle — skip, keep last known value
+        continue;
+      }
+      // Filter out obviously bad hex strings (non-numeric, not yet calculated)
+      if (resp.length > 10 || resp.toUpperCase().contains('NO') || resp.toUpperCase().contains('UNABLE')) {
+        continue;
       }
       if (resp.contains('.')) {
         try {
           resp = double.parse(resp).toStringAsFixed(1);
         } catch (e) {
-          // ignore parsing error
+          continue; // Skip non-parseable values
         }
       }
 
       String name = mapRespNameToRequistedData(data["title"]);
       if (name.isNotEmpty) {
+        requistedData[name] = resp; // Write directly to the global map
         dataCubit.updateDataBlue(name, resp);
+        gotValidData = true;
       }
+    }
+    // If all sensors were skipped (NODATA from all), still emit to keep UI alive
+    if (!gotValidData) {
+      dataCubit.updateDataBlue('speed', requistedData['speed'] ?? '0');
     }
 
     // Update computed metrics (mileage + avg fuel) after each data cycle
@@ -260,7 +313,7 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
           if (predict &&
               predictedCodesList!.prediction == "Problem Detected" &&
               comp == false) {
-            predictNotification();
+            predictNotification(predictedCodesList!, _isAr);
             codes.add(predictedCodesList!.troubleCode!);
           }
         } catch (e) {
@@ -327,7 +380,9 @@ class BluetoothCubit extends Cubit<BluetoothState> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    // Only disconnect when app is fully killed — NOT when user switches apps.
+    // This keeps the OBD2 connection alive during demo (e.g. opening camera/WhatsApp).
+    if (state == AppLifecycleState.detached) {
       obd2.disconnect();
     }
     super.didChangeAppLifecycleState(state);

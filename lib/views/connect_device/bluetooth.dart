@@ -192,9 +192,10 @@ Future<void> showBluetoothList(
                       final dataCubit = BlocProvider.of<DataCubit>(ctx);
                       final predictCubit =
                           BlocProvider.of<PredictCodesCubit>(ctx);
+                      final isAr = Localizations.localeOf(ctx).languageCode == 'ar';
                       Navigator.pop(sheetCtx);
                       await btCubit.connectToDevice(
-                          index, dataCubit, predictCubit);
+                          index, dataCubit, predictCubit, isAr);
                     },
                   );
                 },

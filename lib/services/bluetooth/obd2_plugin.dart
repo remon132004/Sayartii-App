@@ -401,6 +401,9 @@ class Obd2Plugin {
                   .replaceAll("\r", "")
                   .replaceAll(">", "")
                   .replaceAll("SEARCHING...", "")
+                  .replaceAll("UNABLETOCONNECT", "")
+                  .replaceAll("BUSYINIT", "")
+                  .replaceAll("BUSYVOLTAGE", "")
                   .replaceAll("?", "")
                   .replaceAll(" ", "");
               
@@ -520,35 +523,35 @@ class Obd2Plugin {
     if (!value.contains(limit)) {
       List<String> dtcBytes = _calculateDtcFrames(command, value);
       debugPrint('[DTC-PARSE] Parsed bytes (${dtcBytes.length}): $dtcBytes');
-      if (dtcBytes.length < 6) {
-        debugPrint('[DTC-PARSE] Not enough bytes for DTC decoding (need >= 6, got ${dtcBytes.length})');
-      } else {
-        for (int i = 0; i < dtcBytes.length; i += 3) {
-          if (i >= dtcBytes.length) {
-            break;
-          }
-          try {
-            String binary = int.parse(dtcBytes[i] + dtcBytes[i + 1], radix: 16)
-                .toRadixString(2);
-            if (binary.length != 16) {
-              var len = 16 - binary.length;
-              binary = binary.padLeft(len + binary.length, '0');
-            }
-            result += _initialDataOne(binary.substring(0, 2));
-            result += _initialDataTwo(binary.substring(2, 4));
-            result += _initialDTC(binary.substring(4, 8));
-            result += _initialDTC(binary.substring(8, 12));
-            result += _initialDTC(binary.substring(12, binary.length));
-            debugPrint('[DTC-PARSE] Decoded code: $result from bytes [${dtcBytes[i]}, ${dtcBytes[i+1]}]');
-            if (result != "P0000" && dtcCodes.contains(result) == false) {
-              dtcCodes.add(result);
-            }
-          } on RangeError {
-            // index range error - no problem
-            debugPrint('[DTC-PARSE] RangeError at index $i');
-          }
-          result = "";
+      
+      for (int i = 0; i < dtcBytes.length; i += 2) {
+        if (i + 1 >= dtcBytes.length) {
+          break; // Need at least 2 bytes for a valid DTC
         }
+        try {
+          String binary = int.parse(dtcBytes[i] + dtcBytes[i + 1], radix: 16)
+              .toRadixString(2);
+          if (binary.length != 16) {
+            var len = 16 - binary.length;
+            binary = binary.padLeft(len + binary.length, '0');
+          }
+          result += _initialDataOne(binary.substring(0, 2));
+          result += _initialDataTwo(binary.substring(2, 4));
+          result += _initialDTC(binary.substring(4, 8));
+          result += _initialDTC(binary.substring(8, 12));
+          result += _initialDTC(binary.substring(12, binary.length));
+          debugPrint('[DTC-PARSE] Decoded code: $result from bytes [${dtcBytes[i]}, ${dtcBytes[i+1]}]');
+          String cleanResult = result.trim().toUpperCase();
+          if (cleanResult != "P0000" && cleanResult.isNotEmpty && !dtcCodes.contains(cleanResult)) {
+            dtcCodes.add(cleanResult);
+          }
+        } on RangeError {
+          // index range error - no problem
+          debugPrint('[DTC-PARSE] RangeError at index $i');
+        } catch (e) {
+          debugPrint('[DTC-PARSE] Error parsing DTC: $e');
+        }
+        result = "";
       }
     } else {
       debugPrint('[DTC-PARSE] Response contains limit "$limit" — no DTCs from this command');

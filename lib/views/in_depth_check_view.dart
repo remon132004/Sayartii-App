@@ -143,13 +143,16 @@ class _InDepthCheckViewState extends State<InDepthCheckView> {
         ]
         ''';
         
-        await _animateProgress(i, realDuration: 2000);
+        await _animateProgress(i, realDuration: 3500);
         
         try {
           await btCubit.sendDtcRequiest(dtcJsonSingle);
         } catch (e) {
           debugPrint('[IN-DEPTH] Error scanning ${module.obdCommand}: $e');
         }
+        
+        // Wait for OBD2 response callbacks to populate dtcCodes
+        await Future.delayed(const Duration(milliseconds: 3000));
         
         // Check if new codes appeared
         final newCodes = dtcCodes.where((c) => !codesBefore.contains(c)).toList();
@@ -165,7 +168,6 @@ class _InDepthCheckViewState extends State<InDepthCheckView> {
           module.statusColor = kDangerColor;
           
           // Fetch details for each new code
-          // Capture locale before async gap
           final isArLocale = mounted ? Localizations.localeOf(context).languageCode == 'ar' : false;
           for (var code in newCodes) {
             try {
@@ -174,6 +176,12 @@ class _InDepthCheckViewState extends State<InDepthCheckView> {
               _foundFaults.add(DtcCodeModel.fromJson(detailsJson, isAr: isArLocale));
             } catch (e) {
               debugPrint('[IN-DEPTH] Failed to fetch details for $code: $e');
+              // Fallback: show the code even without AI description
+              _foundFaults.add(DtcCodeModel(
+                dtcCode: code.toString(),
+                criticalLevel: "Medium",
+                description: isArLocale ? "تعذّر جلب الوصف" : "Description unavailable",
+              ));
             }
           }
         } else {
@@ -199,6 +207,11 @@ class _InDepthCheckViewState extends State<InDepthCheckView> {
         _isComplete = true;
       });
       
+      // Sync to global cache for notification tap navigation
+      if (_foundFaults.isNotEmpty) {
+        lastDtcDetails = List.from(_foundFaults);
+      }
+
       // Send notification with results
       if (_hasFaults) {
         final isAr = Localizations.localeOf(context).languageCode == 'ar';
